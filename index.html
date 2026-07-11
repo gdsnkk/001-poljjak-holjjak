@@ -2368,7 +2368,6 @@
   <div style="font-size:12px;color:#a99ed6;margin:16px 0 0">🕐 최근 플레이 (전체)</div><ol class="pjlist" id="pjRecent"></ol>
   <button class="pjbtn g" id="pjLogout" style="margin-top:16px">로그아웃</button>
 </div></div>
-<button id="pjFab">🏆 랭킹</button>
 <script>
 (function(){
   var URL="https://sjnhitjxohrievxjywpv.supabase.co", KEY="sb_publishable_3yUqWENtiUeBjLD90BguDg_A0wpfKEN";
@@ -2376,13 +2375,12 @@
   var sb=window.supabase.createClient(URL,KEY); window.PJ_SB=sb;
   var $=function(id){return document.getElementById(id);};
   window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ try{ sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); }catch(e){} };
-  function loggedIn(){ $("pjLogin").style.display="none"; $("pjFab").style.display="block"; }
+  function loggedIn(){ $("pjLogin").style.display="none"; var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
   sb.auth.getSession().then(function(r){ if(r.data.session) loggedIn(); });
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
   $("pjLogout").onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
   $("pjClose").onclick=function(){ $("pjLB").style.display="none"; };
-  $("pjFab").onclick=function(){ $("pjLB").style.display="flex"; loadLB(); };
   function loadLB(){
     sb.from("personal_best").select("nickname,floor").eq("mode","endless").eq("period_key","all").order("floor",{ascending:false}).limit(20).then(function(r){
       $("pjRank").innerHTML=(r.data&&r.data.length)?r.data.map(function(x,i){return "<li><span><span class='pjrk'>"+(i+1)+"</span>"+x.nickname+"</span><span class='pjsc'>"+x.floor+"칸</span></li>";}).join(""):"<li style='border:none;color:#a99ed6'>아직 기록이 없어요 — 한 판 하고 오세요!</li>";
