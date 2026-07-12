@@ -957,6 +957,15 @@
   window.PJ_SETNAME=function(n){ if(typeof n==="string"){ n=n.trim().slice(0,8); if(n&&n!==st.name){ st.name=n; save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } } };
   // 서버 보유 코스메틱을 로컬 st.owned에 합침(합집합 — 로컬 것 삭제 안 함). 기기 전환 시 구매/가챠 획득템 유지.
   window.PJ_MERGEOWNED=function(m){ if(!m)return; if(!st.owned)st.owned={}; var ch=false; ["character","platform","accessory"].forEach(function(k){ if(!st.owned[k])st.owned[k]=[]; (m[k]||[]).forEach(function(id){ if(st.owned[k].indexOf(id)<0){ st.owned[k].push(id); ch=true; } }); }); if(ch){ save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } };
+  // 서버 동기화용 상태 화이트리스트(코인·닉·보유템·기기설정 제외 — 그건 따로/로컬).
+  var PJ_STATE_KEYS=["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal","setsFound","eggsFound","secretSeen","badges","charLevels","charExp","boosters","blesses","doubles","sures","character","platform","accessory"];
+  window.PJ_GETSTATE=function(){ var o={}; PJ_STATE_KEYS.forEach(function(k){ o[k]=st[k]; }); return o; };
+  window.PJ_APPLYSTATE=function(s, serverNewer){ if(!s||typeof s!=="object")return; var ch=false;
+    ["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]>(st[k]||0)){ st[k]=s[k]; ch=true; } });
+    ["setsFound","eggsFound","secretSeen","badges"].forEach(function(k){ if(Array.isArray(s[k])){ if(!Array.isArray(st[k]))st[k]=[]; s[k].forEach(function(v){ if(st[k].indexOf(v)<0){ st[k].push(v); ch=true; } }); } });
+    ["charLevels","charExp"].forEach(function(k){ if(s[k]&&typeof s[k]==="object"){ if(!st[k]||typeof st[k]!=="object")st[k]={}; for(var id in s[k]){ if((s[k][id]||0)>(st[k][id]||0)){ st[k][id]=s[k][id]; ch=true; } } } });
+    if(serverNewer){ ["boosters","blesses","doubles","sures"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]!==st[k]){ st[k]=s[k]; ch=true; } }); ["character","platform","accessory"].forEach(function(k){ if(typeof s[k]==="string"&&s[k]&&s[k]!==st[k]){ st[k]=s[k]; ch=true; } }); }
+    if(ch){ save(); if(typeof applyTheme==="function")applyTheme(); if(typeof drawHero==="function")drawHero(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } };
 
   function normName(n){ return String(n).trim().toLowerCase(); }
   var NICK_ADJ=["말랑","폭신","보들","몽실","뽀짝","쫀득","방긋","꼬물","통통","반짝","살랑","포동","도톰","오동","촉촉","몰랑","부끄","새침","엉뚱","씩씩","활짝","나른","노곤","데굴","말똥","초롱","방실","소복","함박","뭉게","뒤뚱","아장","사뿐","팔랑","방방","콩닥","두근","살금","까꿍","옹골"];
@@ -2387,7 +2396,13 @@
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
   // 로그인 시: 서버 프로필을 진실로 삼아 코인+닉네임을 내려받음. 서버 닉네임이 비어있을 때만 로컬 이름을 올림.
-  async function pullProfile(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins,nickname").eq("id",u.id).single(); if(!r.data)return; if(window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); var sn=(r.data.nickname||"").trim(); if(sn){ if(window.PJ_SETNAME) PJ_SETNAME(sn); } else { syncName(); } pullOwned(); }catch(e){} }
+  async function pullProfile(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins,nickname").eq("id",u.id).single(); if(!r.data)return; if(window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); var sn=(r.data.nickname||"").trim(); if(sn){ if(window.PJ_SETNAME) PJ_SETNAME(sn); } else { syncName(); } pullOwned(); pullState(); }catch(e){} }
+  // ---- 게임 상태(레벨·소모템·착용·통계·수집) 통짜 동기화 (game_state jsonb + state_ver, last-write-wins by 버전) ----
+  var _pulledOnce=false, _lastPushJSON="";
+  function svLocal(){ try{ return Number(localStorage.getItem("poljjak_sv"))||0; }catch(e){ return 0; } }
+  function svSet(v){ try{ localStorage.setItem("poljjak_sv",String(v)); }catch(e){} }
+  async function pullState(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("game_state,state_ver").eq("id",u.id).single(); if(r.data&&r.data.game_state){ var sv=Number(r.data.state_ver)||0, newer=sv>svLocal(); if(window.PJ_APPLYSTATE) PJ_APPLYSTATE(r.data.game_state, newer); if(newer) svSet(sv); } }catch(e){}finally{ _pulledOnce=true; } }
+  async function pushState(){ if(!_pulledOnce)return; try{ var u=(await sb.auth.getUser()).data.user; if(!u||!window.PJ_GETSTATE)return; var s=PJ_GETSTATE(), j=JSON.stringify(s); if(j===_lastPushJSON)return; var ver=(new Date()).getTime(); await sb.rpc('save_game_state',{p_state:s,p_ver:ver}); _lastPushJSON=j; svSet(ver); }catch(e){} }
   // 획득 코스메틱을 서버에 기록(멱등). 상점 구매/가챠 획득 시 호출.
   window.PJ_GRANT=function(kind,id){ (async function(){ try{ await sb.rpc('grant_cosmetic',{p_kind:kind,p_id:id}); }catch(e){} })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
@@ -2397,8 +2412,10 @@
   // 화면에 다시 들어올 때(탭/앱 포그라운드) 서버 코인·닉네임을 재동기화 — 기기 전환 시 최신값 반영. 8초 쓰로틀.
   var _lastPull=0;
   function refreshFromServer(){ var t=(new Date()).getTime(); if(t-_lastPull<8000) return; _lastPull=t; sb.auth.getSession().then(function(r){ if(r.data.session && typeof pullProfile==="function") pullProfile(); }); }
-  document.addEventListener("visibilitychange",function(){ if(!document.hidden) refreshFromServer(); });
+  document.addEventListener("visibilitychange",function(){ if(document.hidden){ pushState(); } else { refreshFromServer(); } });
   window.addEventListener("focus",refreshFromServer);
+  window.addEventListener("blur",function(){ pushState(); });
+  setInterval(pushState, 20000);
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
   $("pjLogout").onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
