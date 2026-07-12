@@ -2045,6 +2045,7 @@
     body.insertAdjacentHTML("beforeend",'<button class="btn" id="gachaBtn" style="width:100%">🎰 랜덤 뽑기 · 🪙'+GACHA_COST+'</button><div class="lede" style="font-size:11px">펫·발판·악세 전체에서 랜덤! 좋은 것일수록 낮은 확률<br><b style="color:var(--dim)">중복이 나와도 환불은 없어요</b></div><div class="lede" style="font-size:9.5px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+gachaOddsHTML()+'</div>');
     COS.forEach(function(cat){ body.insertAdjacentHTML("beforeend",'<div class="sect">'+cat.title+'</div>'); var grid=document.createElement("div"); grid.className="cos-grid";
       cat.list.forEach(function(it){ var owned=st.owned[cat.key].indexOf(it.id)>=0, eq=cat.get()===it.id, pr=cprice(it);
+        if(!cosVisible(it) && !owned) return;  // 어드민이 숨김/미출시로 설정한 아이템은 미보유자에게 숨김
         if(it.secret && !owned){ var lc=document.createElement("div"); lc.className="cos locked"; lc.innerHTML='<div class="lockimg">❓</div><div class="cn">? ? ?</div><div class="cst">'+(secretUnlocked(it)?"뽑기에서 획득 가능!":"여정 <b>"+fmtM(it.unlock)+"</b> 해금")+'</div>'; grid.appendChild(lc); return; }
         var cell=document.createElement("div"); cell.className="cos"+(eq?" eq":"")+(it.secret?" secret":"");
         var cw=(cat.kind==="char")?22:(cat.kind==="acc")?24:56, chh=(cat.kind==="char")?28:(cat.kind==="acc")?24:36;
@@ -2053,8 +2054,8 @@
         if(!(cat.kind==="acc"&&it.id==="none")){ var cv=cell.querySelector("canvas"), cxx=cv.getContext("2d"); cxx.imageSmoothingEnabled=false;
           if(cat.kind==="char"){ drawChar(cxx,it,11,26,false,"none"); } else if(cat.kind==="acc"){ cv.style.height="60px"; drawAccIcon(cxx,it.id); } else drawStoneTop(cxx,it,28,22,false,1); }
         var btn=document.createElement("button");
-        if(!owned){ btn.className="buy"; btn.textContent="🪙"+pr; btn.disabled=st.coins<pr; btn.onclick=function(){ if(st.coins<pr)return; st.coins-=pr; logCoin(-pr,"🛍 "+it.name); st.owned[cat.key].push(it.id); if(window.PJ_GRANT)PJ_GRANT(cat.key,it.id); cat.set(it.id); save(); refreshTop(); checkSet(); renderShop(); drawHero(); applyTheme(); toast(it.name+" 획득!"); }; }
-        else { btn.className="eqb"+(eq?" on":""); btn.textContent=eq?"착용 중":"착용"; btn.disabled=eq; btn.onclick=function(){ cat.set(it.id); save(); checkSet(); renderShop(); drawHero(); applyTheme(); }; }
+        if(!owned){ btn.className="buy"; btn.textContent="🪙"+pr; btn.disabled=st.coins<pr; btn.onclick=function(){ if(st.coins<pr)return; st.coins-=pr; logCoin(-pr,"🛍 "+it.name); st.owned[cat.key].push(it.id); if(window.PJ_GRANT)PJ_GRANT(cat.key,it.id); cat.set(it.id); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); refreshTop(); checkSet(); renderShop(); drawHero(); applyTheme(); toast(it.name+" 획득!"); }; }
+        else { btn.className="eqb"+(eq?" on":""); btn.textContent=eq?"착용 중":"착용"; btn.disabled=eq; btn.onclick=function(){ cat.set(it.id); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); checkSet(); renderShop(); drawHero(); applyTheme(); }; }
         cell.appendChild(btn); grid.appendChild(cell); });
       body.appendChild(grid); });
     $("gachaBtn").onclick=doGacha;
@@ -2084,7 +2085,10 @@
   /* ---------- missions ---------- */
   function missionDef(id){ for(var i=0;i<MISSIONS.length;i++) if(MISSIONS[i].id===id) return MISSIONS[i]; return null; }
   function ensureAd(){ var t=dayKey(); if(st.adDay!==t){ st.adDay=t; st.adCount=0; save(); } }
-  function gachaPool(){ var pool=[]; CHARACTERS.forEach(function(it){ if(it.secret && !secretUnlocked(it)) return; pool.push({type:"character",it:it}); }); PLATFORMS.forEach(function(it){pool.push({type:"platform",it:it});}); ACCESSORIES.forEach(function(it){ if(it.id!=="none") pool.push({type:"accessory",it:it}); }); return pool; }
+  // 어드민 카탈로그 config: 코스메틱 등급/숨김/해제예정일 오버라이드
+  window.PJ_SETCATALOG=function(c){ if(!c||!c.cosmetics)return; function ap(list){ if(!list)return; list.forEach(function(it){ var o=c.cosmetics[it.id]; if(o){ if(o.rarity)it.r=o.rarity; it._active=(o.active!==false); it._releaseAt=o.releaseAt||null; } }); } if(typeof CHARACTERS!=="undefined")ap(CHARACTERS); if(typeof PLATFORMS!=="undefined")ap(PLATFORMS); if(typeof ACCESSORIES!=="undefined")ap(ACCESSORIES); if(typeof renderShop==="function"){} };
+  function cosVisible(it){ if(!it)return true; if(it._active===false)return false; if(it._releaseAt){ var t=Date.parse(it._releaseAt); if(!isNaN(t)&&(new Date()).getTime()<t)return false; } return true; }
+  function gachaPool(){ var pool=[]; CHARACTERS.forEach(function(it){ if(it.secret && !secretUnlocked(it)) return; if(!cosVisible(it)) return; pool.push({type:"character",it:it}); }); PLATFORMS.forEach(function(it){ if(!cosVisible(it)) return; pool.push({type:"platform",it:it});}); ACCESSORIES.forEach(function(it){ if(it.id!=="none" && cosVisible(it)) pool.push({type:"accessory",it:it}); }); return pool; }
   function gachaOdds(){ var pool=gachaPool(), tot=0, by={common:0,rare:0,epic:0,legend:0}; pool.forEach(function(p){ var r=p.it.r||"common", w=RW[r]||0; tot+=w; if(by[r]!=null)by[r]+=w; }); function pct(v){ return tot?Math.round(v/tot*1000)/10:0; } return { common:pct(by.common), rare:pct(by.rare), epic:pct(by.epic), legend:pct(by.legend) }; }
   function gachaOddsHTML(){ var o=gachaOdds(); return '🎲 <span style="color:'+RCOL.common+'">'+RNAME.common+' '+o.common+'%</span> · <span style="color:'+RCOL.rare+'">'+RNAME.rare+' '+o.rare+'%</span> · <span style="color:'+RCOL.epic+'">'+RNAME.epic+' '+o.epic+'%</span> · <span style="color:'+RCOL.legend+'">'+RNAME.legend+' '+o.legend+'%</span>'; }
   function doGacha(){ if(st.coins<GACHA_COST){ toast("코인이 부족해요"); return; } st.coins-=GACHA_COST; logCoin(-GACHA_COST,"🎰 랜덤 뽑기"); st.gachaTotal=(st.gachaTotal||0)+1; if(st.gachaTotal>=15) findEgg("dopamine");
@@ -2111,7 +2115,7 @@
     var box=$("gachaPrev"); box.innerHTML="";
     if(pick.type==="accessory"){ var acv=document.createElement("canvas"); acv.width=24; acv.height=24; acv.style.imageRendering="pixelated"; acv.style.height="88px"; var actx=acv.getContext("2d"); actx.imageSmoothingEnabled=false; drawAccIcon(actx,it.id); box.appendChild(acv); }
     else { var cv=document.createElement("canvas"); cv.width=56; cv.height=48; cv.style.imageRendering="pixelated"; cv.style.height="84px"; var cxx=cv.getContext("2d"); cxx.imageSmoothingEnabled=false; if(pick.type==="character") drawChar(cxx,it,28,44,false,"none"); else drawStoneTop(cxx,it,28,26,false,1); box.appendChild(cv); }
-    $("gachaEquip").onclick=function(){ if(pick.type==="character")st.character=it.id; else if(pick.type==="platform")st.platform=it.id; else st.accessory=it.id; save(); checkSet(); drawHero(); applyTheme(); hide("gachaOv"); refreshHub(); toast(it.name+" 착용!"); };
+    $("gachaEquip").onclick=function(){ if(pick.type==="character")st.character=it.id; else if(pick.type==="platform")st.platform=it.id; else st.accessory=it.id; if(st.owned&&st.owned[pick.type]&&st.owned[pick.type].indexOf(it.id)<0)st.owned[pick.type].push(it.id); save(); if(window.PJ_GRANT)PJ_GRANT(pick.type,it.id); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); checkSet(); drawHero(); applyTheme(); hide("gachaOv"); refreshHub(); toast(it.name+" 착용!"); };
     $("gachaEquip").disabled=false;
     show("gachaOv"); if(!dup){ fireConfetti(); vibrate([20,40,60,40,90]); } }
   function friendByName(nm){ for(var i=0;i<(st.friends||[]).length;i++) if(st.friends[i].name===nm) return st.friends[i]; return null; }
@@ -2263,7 +2267,7 @@
   var dizzyN=0, dizzyT=0;
   function cboxDir(e, el){ try{ var r=el.getBoundingClientRect(); return (e.clientX < r.left+r.width/2)?-1:1; }catch(x){ return 1; } }
   function flashArrow(el, dir){ var a=el.querySelector(dir<0?".cbarrow.l":".cbarrow.r"); if(a){ a.classList.add("hit"); setTimeout(function(){ a.classList.remove("hit"); },220); } }
-  function cycleCos(key, dir){ dir=dir||1; var cat=null; for(var i=0;i<COS.length;i++) if(COS[i].key===key)cat=COS[i]; if(!cat)return; var owned=st.owned[key]||[]; if(owned.length<=1){ toast("상점에서 더 모아보세요!"); return; } var cur=cat.get(), idx=owned.indexOf(cur), n=owned.length; cat.set(owned[((idx+dir)%n+n)%n]); save(); checkSet(); drawHero(); applyTheme(); renderChar();
+  function cycleCos(key, dir){ dir=dir||1; var cat=null; for(var i=0;i<COS.length;i++) if(COS[i].key===key)cat=COS[i]; if(!cat)return; var owned=st.owned[key]||[]; if(owned.length<=1){ toast("상점에서 더 모아보세요!"); return; } var cur=cat.get(), idx=owned.indexOf(cur), n=owned.length; cat.set(owned[((idx+dir)%n+n)%n]); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); checkSet(); drawHero(); applyTheme(); renderChar();
     var now=performance.now(); if(now-dizzyT>900) dizzyN=0; dizzyT=now; dizzyN++; if(dizzyN>=10) findEgg("dizzy"); }
 
   /* ---------- name ---------- */
@@ -2493,6 +2497,8 @@
   function svSet(v){ try{ localStorage.setItem("poljjak_sv",String(v)); }catch(e){} }
   async function pullState(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("game_state,state_ver").eq("id",u.id).single(); if(r.data&&r.data.game_state){ var sv=Number(r.data.state_ver)||0, newer=sv>svLocal(); if(window.PJ_APPLYSTATE) PJ_APPLYSTATE(r.data.game_state, newer); if(newer) svSet(sv); } }catch(e){}finally{ _pulledOnce=true; } }
   async function pushState(){ if(!_pulledOnce)return; try{ var u=(await sb.auth.getUser()).data.user; if(!u||!window.PJ_GETSTATE)return; var s=PJ_GETSTATE(), j=JSON.stringify(s); if(j===_lastPushJSON)return; var ver=(new Date()).getTime(); await sb.rpc('save_game_state',{p_state:s,p_ver:ver}); _lastPushJSON=j; svSet(ver); }catch(e){} }
+  // 착용/획득 등 즉시 확정이 필요한 변경: 로컬 sv를 지금으로 올리고 강제 push → pull이 되돌리지 못하게.
+  window.PJ_PUSHNOW=function(){ try{ svSet((new Date()).getTime()); _lastPushJSON=""; if(_pulledOnce) pushState(); }catch(e){} };
   // 획득 코스메틱을 서버에 기록(멱등). 상점 구매/가챠 획득 시 호출.
   window.PJ_GRANT=function(kind,id){ (async function(){ try{ await sb.rpc('grant_cosmetic',{p_kind:kind,p_id:id}); }catch(e){} })(); };
   // 약관/개인정보 서버본 조회(테스터=draft, 그 외=live). 없으면 null → 게임 하드코딩 fallback.
@@ -2504,6 +2510,8 @@
   PJ_GETCFG('gacha').then(function(c){ if(c&&window.PJ_SETGACHA) PJ_SETGACHA(c); });
   // 상점 가격·활성 로드
   PJ_GETCFG('shop').then(function(c){ if(c&&window.PJ_SETSHOP) PJ_SETSHOP(c); });
+  // 코스메틱 카탈로그(등급·숨김·해제예정) 로드
+  PJ_GETCFG('catalog').then(function(c){ if(c&&window.PJ_SETCATALOG) PJ_SETCATALOG(c); });
   // 서버 공지 로드(활성·기간내). 공지 버튼 열 때 최신으로 다시 노출됨.
   window.PJ_ANN=[];
   sb.rpc('get_announcements').then(function(r){ window.PJ_ANN=(r&&r.data)?r.data:[]; var nb=document.getElementById("noticeBtn"); if(nb&&window.PJ_ANN.length)nb.classList.add("alert"); }).catch(function(){});
