@@ -76,6 +76,9 @@
   .ntc-b { padding:0 13px 12px; font-size:12.5px; line-height:1.6; color:var(--dim); }
   .setrow { width:100%; text-align:left; background:#17122e; border:2px solid var(--line); color:inherit; font:inherit; font-size:14px; padding:12px 14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
   .setrow b { color:var(--gold2); }
+  #settingsOv .card { gap:7px; padding:18px 18px 15px; }
+  #settingsOv .setrow { padding:8px 12px; font-size:13px; }
+  #settingsOv .mhead { margin-bottom:1px; }
   .switch { position:relative; width:44px; height:24px; display:inline-block; } .switch input { opacity:0; width:0; height:0; }
   .switch span { position:absolute; inset:0; background:#2e2456; border-radius:999px; transition:.2s; cursor:pointer; }
   .switch span:before { content:""; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
@@ -452,6 +455,9 @@
   .centerfx { position:absolute; top:45%; left:0; right:0; text-align:center; font-size:17px; font-weight:800; color:#fff; text-shadow:2px 2px 0 #000; opacity:0; pointer-events:none; z-index:2; }
   .centerfx.show { animation:cfx 1.3s ease; }
   @keyframes cfx { 0%{opacity:0;transform:translateY(8px) scale(.85)} 15%{opacity:1;transform:translateY(0) scale(1.08)} 78%{opacity:1} 100%{opacity:0;transform:translateY(-10px)} }
+  .centerfx.big { font-size:38px; color:var(--green,#6ee7a0); text-shadow:3px 3px 0 #000; }
+  .centerfx.big.show { animation:cfxbig .6s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes cfxbig { 0%{opacity:0;transform:scale(.35) rotate(-6deg)} 35%{opacity:1;transform:scale(1.3) rotate(2deg)} 60%{transform:scale(.96) rotate(0)} 100%{opacity:1;transform:scale(1)} }
   .bigcash { width:100%; font-family:inherit; font-size:15px; font-weight:800; background:linear-gradient(180deg,#ffe58a,#ffcf5c); color:#5a3d00; border:3px solid #5a3d00; box-shadow:4px 4px 0 rgba(0,0,0,.4); padding:12px; cursor:pointer; }
   .bigcash:active { transform:translate(2px,2px); box-shadow:2px 2px 0 rgba(0,0,0,.4); }
   .bigcash:disabled { filter:grayscale(.55) brightness(.82); cursor:default; }
@@ -594,6 +600,7 @@
   <div class="setrow"><span>🔔 푸시 알림</span><label class="switch"><input type="checkbox" id="setPush"><span></span></label></div>
   <button class="setrow" id="setSuggest">💡 제안하기 ›</button>
   <button class="setrow" id="setTerms">📄 서비스 이용약관 ›</button>
+  <button class="setrow" id="setPrivacy">🔒 개인정보처리방침 ›</button>
   <button class="setrow" id="setLogout">🚪 로그아웃 <b id="setAccVal" style="font-size:10.5px;color:var(--dim);font-weight:600"></b></button>
   <button class="setrow" id="setDelete" style="color:var(--red)">🗑️ 데이터 초기화 (탈퇴) ›</button>
   <button class="btn ghost" id="settingsClose">닫기</button>
@@ -609,7 +616,9 @@
 <div class="ov" id="suggestOv" hidden><div class="card"><div class="mhead"><h2>💡 제안하기</h2></div><p class="lede">개선 아이디어나 버그를 남겨주세요! 큰 힘이 돼요 🙏</p><textarea id="suggestText" rows="5" style="width:100%;background:#12102a;border:3px solid var(--line);color:var(--ink);font:inherit;font-size:14px;padding:10px" placeholder="여기에 적어주세요..."></textarea><div class="btn-row"><button class="btn" id="suggestSend">메일로 보내기</button><button class="btn ghost" id="suggestCopy">복사</button></div><button class="btn ghost" id="suggestClose">닫기</button></div></div>
 
 <!-- terms -->
-<div class="ov" id="termsOv" hidden><div class="card"><div class="mhead"><h2>📄 이용약관</h2></div><div class="lede" style="text-align:left;font-size:12px;line-height:1.65" id="termsBody"></div><button class="btn ghost" id="termsClose">닫기</button></div></div>
+<div class="ov" id="termsOv" hidden><div class="card"><div class="mhead"><h2>📄 이용약관</h2></div><div class="lede" style="text-align:left;font-size:12px;line-height:1.65;max-height:60vh;overflow:auto" id="termsBody"></div><button class="btn ghost" id="termsClose">닫기</button></div></div>
+<div class="ov" id="privacyOv" hidden><div class="card"><div class="mhead"><h2>🔒 개인정보처리방침</h2></div><div class="lede" style="text-align:left;font-size:12px;line-height:1.65;max-height:60vh;overflow:auto" id="privacyBody"></div><button class="btn ghost" id="privacyClose">닫기</button></div></div>
+<div class="ov" id="welcomeOv" hidden><div class="card" style="text-align:center"><div class="kick">🎉 다시 만나 반가워요!</div><h2 id="welcomeName">환영해요</h2><p class="lede" id="welcomeMsg">탈퇴가 철회되고 계정이 복구되었어요.<br>기록과 코인이 그대로 돌아왔어요! 🐸</p><button class="btn" id="welcomeOk">고마워요</button></div></div>
 
 <!-- pre-run loadout -->
 <div class="ov" id="loadoutOv" hidden><div class="card"><div class="kick">엔드리스</div><h2>🎒 출발 준비</h2><div class="lede" id="loadoutProb"></div><div id="loadoutList" style="display:flex;flex-direction:column;gap:9px"></div><div class="btn-row"><button class="btn" id="loadoutGo">출발!</button><button class="btn ghost" id="loadoutCancel">취소</button></div></div></div>
@@ -732,7 +741,8 @@
   var APP_VERSION = "0.9.1";
   var WELCOME_HTML = "<ul><li>🗓️ <b>오늘의 도전</b> · ♾️ <b>엔드리스</b> 카드를 눌러 플레이!</li><li>징검다리에서 <b>좌/우</b>를 골라 멀리 건너요 — 매 칸 50:50 운!</li><li>🐾 <b>펫</b>·🛍 <b>상점</b>에서 펫·발판·악세를 모아 능력치를 키워요.</li><li>🏆 <b>랭킹</b>·🎯 <b>미션</b>·👥 <b>팀/친구</b>로 매일매일 즐겨요.</li><li>홈의 🗺️ <b>여정</b> 바로 얼마나 멀리 왔는지 확인!</li></ul>";
   var WHATSNEW_HTML = "<ul><li>🎵 <b>배경음악</b> 추가 — 설정에서 켜기</li><li>🪙 <b>코인 내역</b> · 🔔 랭킹 정산 <b>알림</b></li><li>🎖 <b>유저 뱃지</b>로 펫 스탯 강화 · 도감 확장</li><li>✊ <b>부활 미니게임</b> 6종 · 발판 새 모양</li></ul>";
-  var TERMS = "제1조(목적) 본 약관은 '폴짝'(이하 '서비스')의 이용 조건 및 절차를 규정합니다.<br><br>제2조(운영) 본 서비스는 오락 목적의 게임이며, 게임 내 재화(코인)는 현금 가치가 없습니다.<br><br>제3조(데이터) 게임 기록은 이용자의 기기에 저장되며, 기기 변경·초기화 시 소실될 수 있습니다.<br><br>제4조(책임) 서비스는 무상 제공되며, 이용 중 발생한 손해에 대해 운영자는 책임을 지지 않습니다.<br><br>※ 본 약관은 프로토타입용 예시이며, 정식 출시 시 갱신됩니다.";
+  var TERMS = "제1조(목적) 본 약관은 '폴짝홀짝'(이하 '서비스')의 이용 조건·절차와 운영자·이용자의 권리·의무를 규정합니다.<br><br>제2조(서비스) 운(運) 기반 캐주얼 게임으로 랭킹·친구/팀·상점·뽑기·출석/미션 등을 제공합니다.<br><br>제3조(계정) 이용자는 소셜 로그인으로 계정을 생성하며, 계정 관리 책임은 이용자에게 있습니다.<br><br>제4조(재화 '코인') 코인은 서비스 내에서만 쓰이는 재화로 <b>현금 가치가 없고 환급되지 않습니다.</b> 소비된 코인·소모성 아이템은 원칙적으로 환불되지 않습니다. 뽑기의 등급별 확률은 서비스 내에 고지합니다.<br><br>제5조(유료 결제) 결제는 App Store/Google Play를 통해 이루어지며, 환불·청약철회는 관련 법령과 각 스토어 정책에 따릅니다. 이미 사용한 디지털 콘텐츠는 청약철회가 제한될 수 있습니다.<br><br>제6조(금지행위) 변조·매크로·버그 악용 등 비정상적 재화/기록 취득, 부적절한 닉네임, 운영 방해를 금지합니다.<br><br>제7조(회원 탈퇴·데이터 삭제) 설정에서 언제든 탈퇴할 수 있습니다. 탈퇴 시 데이터는 즉시 삭제되지 않고 <b>탈퇴일부터 30일간 보관</b>되며, 이 기간 내 다시 로그인하면 탈퇴가 자동 철회되어 데이터가 복구됩니다. 30일간 재로그인이 없으면 자동으로 영구 삭제됩니다.<br><br>제8조(책임의 한계) 서비스는 '있는 그대로' 제공되며 게임의 승패·기록은 확률·운에 따릅니다.<br><br>제9조(약관 변경) 법령·서비스 변경에 따라 개정될 수 있으며 변경 시 서비스 내 공지합니다.<br><br>제10조(준거법) 대한민국 법을 준거법으로 합니다.<br><br>※ 본 약관은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
+  var PRIVACY = "'폴짝홀짝'(이하 '서비스')는 관련 법령을 준수하여 이용자의 개인정보를 보호합니다.<br><br><b>1. 수집 항목</b><br>· 계정: 소셜 로그인 식별자, 이메일, 닉네임<br>· 게임 이용: 플레이 기록·점수·랭킹, 보유/구매 코인, 친구·팀 정보<br>· 결제: 인앱결제 내역(카드정보는 Apple/Google이 처리, 운영자 미저장)<br>· 광고·기기: 광고 식별자, 기기·OS, IP<br><br><b>2. 이용 목적</b><br>회원 식별·계정 관리, 랭킹·친구·팀 기능, 코인 지급·구매·부정이용 방지, 광고 게재·통계, 문의 대응·공지.<br><br><b>3. 보유 기간</b><br>목적 달성 시까지 보유 후 파기. <b>회원 탈퇴 시 탈퇴일부터 30일간 보관</b>하며, 30일 내 재로그인 시 복구, 미접속 시 자동 영구 삭제됩니다. 결제·거래 기록은 법령에 따라 5년 보관될 수 있습니다.<br><br><b>4. 처리위탁</b><br>Supabase(데이터 저장·인증), Google AdMob(광고), Apple/Google(결제). 각 사업자의 방침을 따릅니다.<br><br><b>5. 광고·추적</b><br>Google AdMob 광고를 게재하며 맞춤형 광고에 광고 식별자를 사용할 수 있습니다. iOS는 ATT 동의를 요청하며 거부 시 비맞춤형 광고가 제공됩니다.<br><br><b>6. 이용자 권리</b><br>열람·정정·삭제·처리정지 및 회원 탈퇴를 언제든 요청할 수 있습니다.<br><br><b>7. 아동</b><br>만 14세 미만은 법정대리인 동의 없이 가입할 수 없습니다.<br><br><b>8. 문의</b><br>studio.gdsnkk@gmail.com<br><br>※ 본 방침은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
 
   /* ---------- pixel art data ---------- */
   // characters: proc-drawn. body color + feature. stats luck/bounty/revive, jump flavor.
@@ -958,6 +968,7 @@
   var st = load();
   window.PJ_SETCOINS=function(c){ if(typeof c==="number"&&!isNaN(c)){ st.coins=c; save(); if(typeof refreshTop==="function")refreshTop(); if(typeof refreshHub==="function")refreshHub(); } };
   window.PJ_SETNAME=function(n){ if(typeof n==="string"){ n=n.trim().slice(0,8); if(n&&n!==st.name){ st.name=n; save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } } };
+  window.PJ_WELCOMEBACK=function(){ var el=document.getElementById("welcomeName"); if(el) el.textContent=(st.name||"도전자")+"님, 반가워요!"; if(typeof show==="function") show("welcomeOv"); };
   // 서버 보유 코스메틱을 로컬 st.owned에 합침(합집합 — 로컬 것 삭제 안 함). 기기 전환 시 구매/가챠 획득템 유지.
   window.PJ_MERGEOWNED=function(m){ if(!m)return; if(!st.owned)st.owned={}; var ch=false; ["character","platform","accessory"].forEach(function(k){ if(!st.owned[k])st.owned[k]=[]; (m[k]||[]).forEach(function(id){ if(st.owned[k].indexOf(id)<0){ st.owned[k].push(id); ch=true; } }); }); if(ch){ save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } };
   // 서버 동기화용 상태 화이트리스트(코인·닉·보유템·기기설정 제외 — 그건 따로/로컬).
@@ -1381,7 +1392,7 @@
     if(n<20) return "<b>"+n+"칸</b> · 징검다리의 전설!";
     return "<b>"+n+"칸</b> · 강 끝까지 가보자!";
   }
-  function showCenterFx(txt){ var el=$("centerFx"); el.textContent=txt; el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); clearTimeout(showCenterFx._t); showCenterFx._t=setTimeout(function(){el.classList.remove("show");},1300); }
+  function showCenterFx(txt, big){ var el=$("centerFx"); el.textContent=txt; el.classList.remove("show"); el.classList.toggle("big", !!big); void el.offsetWidth; el.classList.add("show"); clearTimeout(showCenterFx._t); showCenterFx._t=setTimeout(function(){el.classList.remove("show");}, big?750:1300); }
   function updateEcon(){ var endless=(mode==="endless");
     $("stPotCell").style.display=endless?"":"none"; $("cashoutBtn").style.display=endless?"":"none";
     if(!endless) return;
@@ -1464,8 +1475,8 @@
   }
 
   function afterHopOK(){
-    setPhase("success"); sfx(game.savedBy?"save":"hop");
-    if(game.savedBy==="luck") showCenterFx("🍀 행운! 세이프");
+    setPhase("success"); sfx((game.savedBy && game.savedBy!=="luck")?"save":"hop");
+    // 🍀 행운(luck)은 '정답률'이라 틀린 선택을 조용히 성공 처리(팝업 없음). 부활 연출은 실제 넘어진 뒤에만.
     if(game.savedBy==="tube") showCenterFx("🛟 튜브가 건져줬어요!");
     if(game.savedBy==="sure") showCenterFx("🎯 정조준 명중!");
     floor++; $("floor").textContent=floor; vibrate(12);
@@ -1489,10 +1500,10 @@
 
   /* ---------- skill-based revival mini-games ---------- */
   function endSave(){ saveRun=false; if(saveRAF){cancelAnimationFrame(saveRAF); saveRAF=0;} var ov=$("saveOv"); if(ov){ov.onpointerdown=null; ov.onpointerup=null;} }
-  function onSaveWin(){ endSave(); hide("saveOv"); vibrate([15,40,90]); sfx("save"); showCenterFx("🧗 매달려서 건넜다!");
+  function onSaveWin(){ endSave(); hide("saveOv"); vibrate([15,40,90,40,140]); sfx("save"); showCenterFx("🎉 성공!", true);
     st.totalSaves=(st.totalSaves||0)+1; if(st.totalSaves>=10) findEgg("reviver");
     floor++; $("floor").textContent=floor; if(mode==="endless"){ runPot+=gainFor(floor); runProb*=pendingStepP; }
-    armRound(); setPhase("ready"); updateEcon(); updateProb(); resumeCountdown(); }
+    armRound(); setPhase("ready"); updateEcon(); updateProb(); busy=true; setTimeout(resumeCountdown, 600); }  // 성공! 짧게 빵 → 카운트다운
   function resumeCountdown(){ busy=true; var seq=["3","2","1","시작!"], i=0; (function step(){ if(i<seq.length){ showCenterFx(seq[i]); sfx("tick"); vibrate(8); i++; setTimeout(step,220); } else { busy=false; } })(); }
   function onSaveLose(){ endSave(); hide("saveOv"); vibrate([45,35,70]); sfx("splash"); finishEndless("fall"); }
   function startSaveGame(){
@@ -2267,10 +2278,13 @@
   $("suggestClose").onclick=function(){ hide("suggestOv"); };
   $("suggestCopy").onclick=function(){ var t=$("suggestText").value.trim(); if(!t){ toast("내용을 적어주세요"); return; } if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){toast("복사됐어요! 붙여넣어 보내주세요");},function(){toast("복사 실패");}); } else toast("복사 실패"); };
   $("suggestSend").onclick=function(){ var t=$("suggestText").value.trim(); if(!t){ toast("내용을 적어주세요"); return; } try{ window.location.href='mailto:?subject='+encodeURIComponent('폴짝 제안')+'&body='+encodeURIComponent(t); }catch(e){ toast("메일 앱을 열 수 없어요"); } };
-  $("setTerms").onclick=function(){ $("termsBody").innerHTML=TERMS; show("termsOv"); };
+  $("setTerms").onclick=function(){ $("termsBody").innerHTML=TERMS; show("termsOv"); if(window.PJ_GETDOC) PJ_GETDOC("legal_terms").then(function(t){ if(t) $("termsBody").innerHTML=t; }); };
   $("termsClose").onclick=function(){ hide("termsOv"); };
-  $("setLogout").onclick=function(){ if(window.PJ_LOGOUT){ if(confirm("로그아웃할까요? 다시 로그인하면 기록이 복원돼요.")) window.PJ_LOGOUT(); } else { toast("로그인 정보가 없어요"); } };
-  $("setDelete").onclick=function(){ if(confirm("모든 데이터(코인·기록·아이템)가 삭제됩니다. 계속할까요?")){ try{ localStorage.removeItem(LS_STATE); localStorage.removeItem(LS_BOARD); }catch(e){} location.reload(); } };
+  $("setPrivacy").onclick=function(){ $("privacyBody").innerHTML=PRIVACY; show("privacyOv"); if(window.PJ_GETDOC) PJ_GETDOC("legal_privacy").then(function(t){ if(t) $("privacyBody").innerHTML=t; }); };
+  $("privacyClose").onclick=function(){ hide("privacyOv"); };
+  $("welcomeOk").onclick=function(){ hide("welcomeOv"); };
+  $("setLogout").onclick=function(){ if(!window.PJ_LOGOUT){ toast("로그인 정보가 없어요"); return; } pxConfirm("로그아웃할까요?\n다시 로그인하면 기록이 복원돼요.", function(){ window.PJ_LOGOUT(); }, "로그아웃"); };
+  $("setDelete").onclick=function(){ pxConfirm("정말 탈퇴할까요?\n탈퇴 후 30일간 데이터가 보관되며,\n그 안에 다시 로그인하면 복구돼요.\n30일이 지나면 영구 삭제됩니다.", function(){ if(window.PJ_REQUEST_DELETION){ window.PJ_REQUEST_DELETION(); } else { try{ localStorage.removeItem(LS_STATE); localStorage.removeItem(LS_BOARD); }catch(e){} location.reload(); } }, "탈퇴하기"); };
   $("byeBack").onclick=function(){ hide("byeOv"); goHub(); };
   // hardware/browser back → close overlays / leave play / show goodbye on home
   try{ history.pushState({pj:1},""); }catch(e){}
@@ -2393,16 +2407,17 @@
   .pjrk{color:#a99ed6;width:26px;display:inline-block}.pjsc{color:#ffe58a;font-weight:800}
 </style>
 <div id="pjLogin"><div class="pjcard">
-  <h2>🐸 폴짝홀짝 온라인</h2><p>로그인하면 내 기록이 서버 랭킹에 올라가요</p>
-  <input id="pjEmail" type="email" placeholder="이메일" autocomplete="username">
-  <input id="pjPw" type="password" placeholder="비밀번호" autocomplete="current-password">
-  <button class="pjbtn" id="pjLoginBtn">로그인</button>
-  <button class="pjbtn g" id="pjSignupBtn">계정 만들기 (최초 1회)</button>
-  <div class="pjor"><span>또는 간편 시작</span></div>
-  <button class="pjbtn kakao" id="pjKakao">💬 카카오로 시작</button>
+  <h2>🐸 폴짝홀짝 온라인</h2><p>로그인하면 기록이 저장되고, 기기를 바꿔도 복원돼요</p>
   <button class="pjbtn google" id="pjGoogle">Google로 시작</button>
   <button class="pjbtn apple" id="pjApple"> Apple로 시작</button>
   <div class="pjerr" id="pjErr"></div>
+  <div id="pjEmailBox" style="display:none;margin-top:6px">
+    <input id="pjEmail" type="email" placeholder="이메일" autocomplete="username">
+    <input id="pjPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <button class="pjbtn" id="pjLoginBtn">로그인</button>
+    <button class="pjbtn g" id="pjSignupBtn">계정 만들기</button>
+  </div>
+  <button id="pjEmailToggle" style="background:none;border:none;color:#6f6598;font-size:11px;margin-top:12px;cursor:pointer;width:100%">이메일로 로그인 ›</button>
 </div></div>
 <div id="pjLB"><div class="pjcard" style="max-width:440px">
   <h2>🏆 온라인 랭킹 <button class="pjbtn g" id="pjClose" style="width:auto;float:right;padding:6px 12px;margin:0">닫기</button></h2>
@@ -2421,7 +2436,9 @@
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };
-  function loggedIn(){ $("pjLogin").style.display="none"; sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); pullProfile(); }
+  // 탈퇴 요청: 서버에 deleted_at 마킹(30일 유예) → 로컬 비우고 로그아웃. 30일 내 재로그인 시 자동 복구.
+  window.PJ_REQUEST_DELETION=function(){ (async function(){ try{ await sb.rpc('request_deletion'); }catch(e){} try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} sb.auth.signOut().then(function(){ location.reload(); }); })(); };
+  function loggedIn(){ $("pjLogin").style.display="none"; sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){}); pullProfile(); }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
   // 로그인 시: 서버 프로필을 진실로 삼아 코인+닉네임을 내려받음. 서버 닉네임이 비어있을 때만 로컬 이름을 올림.
@@ -2434,6 +2451,8 @@
   async function pushState(){ if(!_pulledOnce)return; try{ var u=(await sb.auth.getUser()).data.user; if(!u||!window.PJ_GETSTATE)return; var s=PJ_GETSTATE(), j=JSON.stringify(s); if(j===_lastPushJSON)return; var ver=(new Date()).getTime(); await sb.rpc('save_game_state',{p_state:s,p_ver:ver}); _lastPushJSON=j; svSet(ver); }catch(e){} }
   // 획득 코스메틱을 서버에 기록(멱등). 상점 구매/가챠 획득 시 호출.
   window.PJ_GRANT=function(kind,id){ (async function(){ try{ await sb.rpc('grant_cosmetic',{p_kind:kind,p_id:id}); }catch(e){} })(); };
+  // 약관/개인정보 서버본 조회(테스터=draft, 그 외=live). 없으면 null → 게임 하드코딩 fallback.
+  window.PJ_GETDOC=function(key){ return (async function(){ try{ var r=await sb.rpc('get_doc',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
   // 코인 원장 최근 50건(서버 진실 = 전체내역·기기간 동일·balance_after 잔액 포함).
   window.PJ_FETCHCOINLOG=function(){ return (async function(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return []; var r=await sb.from("coin_transactions").select("delta,reason,balance_after,created_at").eq("user_id",u.id).order("created_at",{ascending:false}).limit(50); return (r&&r.data)?r.data:[]; }catch(e){ return []; } })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
@@ -2451,9 +2470,9 @@
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
   // 소셜 로그인(OAuth): 프로바이더로 이동 → 돌아오면 세션 생성 → onAuthStateChange가 loggedIn 호출.
   function pjOAuth(provider){ $("pjErr").textContent="이동 중…"; sb.auth.signInWithOAuth({provider:provider, options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){ if(r.error)$("pjErr").textContent=r.error.message; }); }
-  $("pjKakao").onclick=function(){ pjOAuth("kakao"); };
   $("pjGoogle").onclick=function(){ pjOAuth("google"); };
   $("pjApple").onclick=function(){ pjOAuth("apple"); };
+  $("pjEmailToggle").onclick=function(){ var b=$("pjEmailBox"); b.style.display=(b.style.display==="none")?"block":"none"; };
   sb.auth.onAuthStateChange(function(evt,session){ if(session && $("pjLogin").style.display!=="none") loggedIn(); });
   $("pjLogout").onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
   $("pjClose").onclick=function(){ $("pjLB").style.display="none"; };
