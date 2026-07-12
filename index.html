@@ -959,13 +959,17 @@
   window.PJ_MERGEOWNED=function(m){ if(!m)return; if(!st.owned)st.owned={}; var ch=false; ["character","platform","accessory"].forEach(function(k){ if(!st.owned[k])st.owned[k]=[]; (m[k]||[]).forEach(function(id){ if(st.owned[k].indexOf(id)<0){ st.owned[k].push(id); ch=true; } }); }); if(ch){ save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } };
   // 서버 동기화용 상태 화이트리스트(코인·닉·보유템·기기설정 제외 — 그건 따로/로컬).
   var PJ_STATE_KEYS=["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal","setsFound","eggsFound","secretSeen","badges","charLevels","charExp","boosters","blesses","doubles","sures","character","platform","accessory"];
-  window.PJ_GETSTATE=function(){ var o={}; PJ_STATE_KEYS.forEach(function(k){ o[k]=st[k]; }); return o; };
+  window.PJ_GETSTATE=function(){ var o={}; PJ_STATE_KEYS.forEach(function(k){ o[k]=st[k]; }); o.dailyRecord=st.dailyRecord; try{ o._board=loadBoard(); }catch(e){} return o; };
   window.PJ_APPLYSTATE=function(s, serverNewer){ if(!s||typeof s!=="object")return; var ch=false;
     ["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]>(st[k]||0)){ st[k]=s[k]; ch=true; } });
     ["setsFound","eggsFound","secretSeen","badges"].forEach(function(k){ if(Array.isArray(s[k])){ if(!Array.isArray(st[k]))st[k]=[]; s[k].forEach(function(v){ if(st[k].indexOf(v)<0){ st[k].push(v); ch=true; } }); } });
     ["charLevels","charExp"].forEach(function(k){ if(s[k]&&typeof s[k]==="object"){ if(!st[k]||typeof st[k]!=="object")st[k]={}; for(var id in s[k]){ if((s[k][id]||0)>(st[k][id]||0)){ st[k][id]=s[k][id]; ch=true; } } } });
     if(serverNewer){ ["boosters","blesses","doubles","sures"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]!==st[k]){ st[k]=s[k]; ch=true; } }); ["character","platform","accessory"].forEach(function(k){ if(typeof s[k]==="string"&&s[k]&&s[k]!==st[k]){ st[k]=s[k]; ch=true; } }); }
-    if(ch){ save(); if(typeof applyTheme==="function")applyTheme(); if(typeof drawHero==="function")drawHero(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } };
+    // 데일리 베스트: 더 높은 층 채택
+    if(s.dailyRecord&&(s.dailyRecord.floor||0)>((st.dailyRecord&&st.dailyRecord.floor)||0)){ st.dailyRecord=s.dailyRecord; ch=true; }
+    // 기록판(엔드리스 최고·여정): 이름별 최고점 병합 — 어느 쪽 기록도 사라지지 않음
+    if(Array.isArray(s._board)){ try{ var b=loadBoard(), bch=false; s._board.forEach(function(se){ if(!se||!se.name)return; var le=null; for(var i=0;i<b.length;i++){ if(b[i].name===se.name){ le=b[i]; break; } } if(!le){ se.order=nextSeq(b); b.push(se); bch=true; } else { if((se.score||0)>(le.score||0)){ le.score=se.score; le.items=se.items; le.prob=se.prob; le.char=se.char; le.lvl=se.lvl; le.plat=se.plat; le.acc=se.acc; bch=true; } if((se.bestNoItem||0)>(le.bestNoItem||0)){ le.bestNoItem=se.bestNoItem; bch=true; } } }); if(bch){ saveBoard(b); ch=true; } }catch(e){} }
+    if(ch){ save(); if(typeof applyTheme==="function")applyTheme(); if(typeof drawHero==="function")drawHero(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); if(typeof renderJourneyMap==="function"){ try{ renderJourneyMap(); }catch(e){} } } };
 
   function normName(n){ return String(n).trim().toLowerCase(); }
   var NICK_ADJ=["말랑","폭신","보들","몽실","뽀짝","쫀득","방긋","꼬물","통통","반짝","살랑","포동","도톰","오동","촉촉","몰랑","부끄","새침","엉뚱","씩씩","활짝","나른","노곤","데굴","말똥","초롱","방실","소복","함박","뭉게","뒤뚱","아장","사뿐","팔랑","방방","콩닥","두근","살금","까꿍","옹골"];
