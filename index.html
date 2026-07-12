@@ -1639,11 +1639,12 @@
   function colorGame(d, win, lose){
     var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
     $("saveInst").textContent="🚦 초록일 때만 탭!"; $("saveHint").textContent="빨강·대기 중 누르면 실패!";
-    var need=3, got=0, done=false, t0=performance.now(), limit=9000;
-    var phase="wait", pT=t0+400+Math.random()*700, greenMs=Math.max(370,780-d*100);
+    var need=3, got=0, done=false, t0=performance.now(), limit=9500;
+    var phase="wait", pT=t0+350+Math.random()*450, greenMs=Math.max(440,820-d*90), lastRed=false;
     saveRun=true;
     function frame(ts){ if(!saveRun)return;
-      if(ts>=pT){ if(phase==="wait"){ phase=(Math.random()<0.5)?"green":"red"; pT=ts+(phase==="green"?greenMs:(420+Math.random()*520)); if(phase==="green")vibrate(15); } else { phase="wait"; pT=ts+280+Math.random()*680; } }
+      // 초록 62%·연속 빨강 금지·빨강/대기 짧게 → 시간 내 초록이 넉넉히 뜨도록(운탈락 방지)
+      if(ts>=pT){ if(phase==="wait"){ var goGreen=lastRed||(Math.random()<0.62); phase=goGreen?"green":"red"; lastRed=(phase==="red"); pT=ts+(phase==="green"?greenMs:(360+Math.random()*320)); if(phase==="green")vibrate(15); } else { phase="wait"; pT=ts+200+Math.random()*360; } }
       x.textAlign="center"; x.textBaseline="middle";
       x.fillStyle=phase==="green"?"#2f8a58":phase==="red"?"#7a2230":"#2e2456"; x.fillRect(0,0,W,H);
       x.fillStyle="#fff"; x.font="bold 26px 'Apple SD Gothic Neo',sans-serif"; x.fillText(phase==="green"?"지금 탭!":phase==="red"?"멈춰!":"대기…", W/2, H/2-6);
