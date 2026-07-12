@@ -961,7 +961,7 @@
   function randomNick(){ var a=NICK_ADJ[Math.floor(Math.random()*NICK_ADJ.length)], n=NICK_NOUN[Math.floor(Math.random()*NICK_NOUN.length)]; return a+n; }
   function genCode(){ var L="ABCDEFGHJKLMNPQRSTUVWXYZ", s=""; for(var i=0;i<4;i++)s+=L.charAt(Math.floor(Math.random()*L.length)); for(i=0;i<4;i++)s+=Math.floor(Math.random()*10); return s; }
   function nowLabel(){ var d=new Date(); return (d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+pad(d.getMinutes()); }
-  function logCoin(delta, reason){ if(!delta)return; if(delta<0 && window.PJ_SPEND) PJ_SPEND(-delta, reason); if(delta>0) st.coinsEarned=(st.coinsEarned||0)+delta; if(!st.coinLog)st.coinLog=[]; st.coinLog.unshift({d:delta, r:reason||"", t:nowLabel()}); if(st.coinLog.length>30)st.coinLog.length=30; }
+  function logCoin(delta, reason){ if(!delta)return; if(delta<0 && window.PJ_SPEND) PJ_SPEND(-delta, reason); if(delta>0 && window.PJ_EARN && !/상금|오늘의 도전/.test(reason||"")) PJ_EARN(delta, reason); if(delta>0) st.coinsEarned=(st.coinsEarned||0)+delta; if(!st.coinLog)st.coinLog=[]; st.coinLog.unshift({d:delta, r:reason||"", t:nowLabel()}); if(st.coinLog.length>30)st.coinLog.length=30; }
   function topPct(v, mid){ v=v||0; var p=100/(1+v/mid); return Math.max(1, Math.round(p)); }
   function addNotif(title, body){ if(!st.notifs)st.notifs=[]; st.notifs.unshift({title:title, body:body||"", t:nowLabel(), read:false}); if(st.notifs.length>30)st.notifs.length=30; save(); }
   function unreadCount(){ return (st.notifs||[]).filter(function(n){return !n.read;}).length; }
@@ -2196,7 +2196,7 @@
   /* ---------- name ---------- */
   function updateNameHint(){ var ni=$("nameInput"); if(ni.value.length>8){ ni.value=ni.value.slice(0,8); } var v=ni.value.trim(), h=$("nameHint"); if(!v){h.textContent="";h.className="hint new";return;} var e=findEntry(loadBoard(),v); if(e){h.textContent="이미 등록된 이름 · 최고 "+e.score+"칸. 이어서 도전.";h.className="hint known";} else {h.textContent="새로운 도전자입니다.";h.className="hint new";} }
   function openName(){ $("nameInput").value=st.name||""; updateNameHint(); show("nameOv"); setTimeout(function(){$("nameInput").focus();},150); }
-  function saveName(){ var v=$("nameInput").value.trim().slice(0,8); st.name=v||randomNick(); save(); hide("nameOv"); refreshHub(); }
+  function saveName(){ var v=$("nameInput").value.trim().slice(0,8); st.name=v||randomNick(); save(); hide("nameOv"); refreshHub(); if(window.PJ_SYNCNAME) window.PJ_SYNCNAME(); }
 
   function show(id){ $(id).hidden=false; } function hide(id){ $(id).hidden=true; }
   function goHub(){ stopLoop(); bgmForGame(false); refreshHub(); showScreen("hub"); }
@@ -2378,8 +2378,10 @@
   function gameName(){ try{ var raw=localStorage.getItem("poljjak_state_v1"); return raw?(JSON.parse(raw).name||"").trim().slice(0,8):""; }catch(e){ return ""; } }
   window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
+  window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   function loggedIn(){ $("pjLogin").style.display="none"; syncName(); pullCoins(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
+  window.PJ_SYNCNAME=syncName;
   async function pullCoins(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins").eq("id",u.id).single(); if(r.data&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} }
   sb.auth.getSession().then(function(r){ if(r.data.session) loggedIn(); });
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
