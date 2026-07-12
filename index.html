@@ -953,6 +953,7 @@
     return s; }
   function save(){ try{localStorage.setItem(LS_STATE,JSON.stringify(st));}catch(e){} }
   var st = load();
+  window.PJ_SETCOINS=function(c){ if(typeof c==="number"&&!isNaN(c)){ st.coins=c; save(); if(typeof refreshTop==="function")refreshTop(); if(typeof refreshHub==="function")refreshHub(); } };
 
   function normName(n){ return String(n).trim().toLowerCase(); }
   var NICK_ADJ=["말랑","폭신","보들","몽실","뽀짝","쫀득","방긋","꼬물","통통","반짝","살랑","포동","도톰","오동","촉촉","몰랑","부끄","새침","엉뚱","씩씩","활짝","나른","노곤","데굴","말똥","초롱","방실","소복","함박","뭉게","뒤뚱","아장","사뿐","팔랑","방방","콩닥","두근","살금","까꿍","옹골"];
@@ -2375,9 +2376,10 @@
   var sb=window.supabase.createClient(URL,KEY); window.PJ_SB=sb;
   var $=function(id){return document.getElementById(id);};
   function gameName(){ try{ var raw=localStorage.getItem("poljjak_state_v1"); return raw?(JSON.parse(raw).name||"").trim().slice(0,8):""; }catch(e){ return ""; } }
-  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); }catch(e){} })(); };
-  function loggedIn(){ $("pjLogin").style.display="none"; syncName(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
+  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
+  function loggedIn(){ $("pjLogin").style.display="none"; syncName(); pullCoins(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
+  async function pullCoins(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins").eq("id",u.id).single(); if(r.data&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} }
   sb.auth.getSession().then(function(r){ if(r.data.session) loggedIn(); });
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
