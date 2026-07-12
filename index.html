@@ -2374,8 +2374,10 @@
   if(!window.supabase){ document.getElementById("pjLogin").innerHTML="<div class='pjcard'>Supabase 로드 실패 — 인터넷 확인</div>"; return; }
   var sb=window.supabase.createClient(URL,KEY); window.PJ_SB=sb;
   var $=function(id){return document.getElementById(id);};
-  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ try{ sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); }catch(e){} };
-  function loggedIn(){ $("pjLogin").style.display="none"; var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
+  function gameName(){ try{ var raw=localStorage.getItem("poljjak_state_v1"); return raw?(JSON.parse(raw).name||"").trim().slice(0,8):""; }catch(e){ return ""; } }
+  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); }catch(e){} })(); };
+  function loggedIn(){ $("pjLogin").style.display="none"; syncName(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
+  async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   sb.auth.getSession().then(function(r){ if(r.data.session) loggedIn(); });
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
