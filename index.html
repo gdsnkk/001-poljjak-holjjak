@@ -747,6 +747,8 @@
   /* ---------- pixel art data ---------- */
   // characters: proc-drawn. body color + feature. stats luck/bounty/revive, jump flavor.
   var RW = { common:60, rare:25, epic:12, legend:3 };
+  // 어드민 갓챠 가중치 config 적용(get_cfg 'gacha'). gachaOdds()가 RW로 계산하므로 인게임 확률표기도 자동 반영.
+  window.PJ_SETGACHA=function(c){ if(c&&c.weights){ ["common","rare","epic","legend"].forEach(function(r){ var w=c.weights[r]; if(typeof w==="number"&&w>=0) RW[r]=w; }); } };
   var RPRICE = { common:150, rare:300, epic:550, legend:950 };
   var RCOL = { common:"#a99ed6", rare:"#63e0ff", epic:"#b98cff", legend:"#ffd23e" };
   var RNAME = { common:"일반", rare:"레어", epic:"에픽", legend:"전설" };
@@ -1006,6 +1008,14 @@
   if(!st.teams.length && st.teamName){ st.teams=[{name:st.teamName, members:(st.friends||[]).filter(function(f){return f.inTeam;}).map(function(f){return f.name;})}]; st.teamName=""; save(); }
   function loadBoard(){ try{var b=JSON.parse(localStorage.getItem(LS_BOARD));return Array.isArray(b)?b:[];}catch(e){return [];} }
   function saveBoard(b){ try{localStorage.setItem(LS_BOARD,JSON.stringify(b));}catch(e){} }
+  // 이름 변경 시 내 랭킹 항목을 새 이름으로 이관(계정 기준). 옛/새 이름 항목 중 최고기록만 남기고 새 이름으로.
+  function relabelBoards(oldName, newName){
+    if(!oldName || normName(oldName)===normName(newName)) return;
+    var on=normName(oldName), nn=normName(newName);
+    function fix(arr){ if(!Array.isArray(arr))return; var mine=arr.filter(function(e){var k=normName(e.name);return k===on||k===nn;}); if(!mine.length)return; var sf=(mine[0].score!=null)?"score":"floor"; var best=mine[0]; mine.forEach(function(e){ if((e[sf]||0)>(best[sf]||0))best=e; }); best.name=newName; for(var i=arr.length-1;i>=0;i--){ var k=normName(arr[i].name); if((k===on||k===nn)&&arr[i]!==best) arr.splice(i,1); } }
+    var b=loadBoard(); fix(b); saveBoard(b);
+    ["dailyBoard","weeklyBoard","monthlyBoard"].forEach(function(k){ if(st[k]&&st[k].entries) fix(st[k].entries); });
+  }
   function findEntry(b,n){ var k=normName(n); for(var i=0;i<b.length;i++) if(normName(b[i].name)===k) return b[i]; return null; }
   function personalBest(n){ var e=findEntry(loadBoard(),n); return e?e.score:0; }
   function nextSeq(b){ var m=-1; for(var i=0;i<b.length;i++){var o=b[i].order||0; if(o>m)m=o;} return m+1; }
@@ -2252,7 +2262,7 @@
   /* ---------- name ---------- */
   function updateNameHint(){ var ni=$("nameInput"); if(ni.value.length>8){ ni.value=ni.value.slice(0,8); } var v=ni.value.trim(), h=$("nameHint"); if(!v){h.textContent="";h.className="hint new";return;} var e=findEntry(loadBoard(),v); if(e){h.textContent="이미 등록된 이름 · 최고 "+e.score+"칸. 이어서 도전.";h.className="hint known";} else {h.textContent="새로운 도전자입니다.";h.className="hint new";} }
   function openName(){ $("nameInput").value=st.name||""; updateNameHint(); show("nameOv"); setTimeout(function(){$("nameInput").focus();},150); }
-  function saveName(){ var v=$("nameInput").value.trim().slice(0,8); st.name=v||randomNick(); save(); hide("nameOv"); refreshHub(); if(window.PJ_SYNCNAME) window.PJ_SYNCNAME(); }
+  function saveName(){ var old=st.name; var v=$("nameInput").value.trim().slice(0,8); st.name=v||randomNick(); relabelBoards(old, st.name); save(); hide("nameOv"); refreshHub(); if(window.PJ_SYNCNAME) window.PJ_SYNCNAME(); }
 
   function show(id){ $(id).hidden=false; } function hide(id){ $(id).hidden=true; }
   function goHub(){ stopLoop(); bgmForGame(false); refreshHub(); showScreen("hub"); }
@@ -2483,6 +2493,8 @@
   window.PJ_GETCFG=function(key){ return (async function(){ try{ var r=await sb.rpc('get_cfg',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
   // 미니게임 설정(가중치·난이도) 서버에서 로드 → 게임에 적용
   PJ_GETCFG('minigames').then(function(c){ if(c&&window.PJ_SETMGCFG) PJ_SETMGCFG(c); });
+  // 갓챠 등급 가중치 로드
+  PJ_GETCFG('gacha').then(function(c){ if(c&&window.PJ_SETGACHA) PJ_SETGACHA(c); });
   // 코인 원장 최근 50건(서버 진실 = 전체내역·기기간 동일·balance_after 잔액 포함).
   window.PJ_FETCHCOINLOG=function(){ return (async function(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return []; var r=await sb.from("coin_transactions").select("delta,reason,balance_after,created_at").eq("user_id",u.id).order("created_at",{ascending:false}).limit(50); return (r&&r.data)?r.data:[]; }catch(e){ return []; } })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
