@@ -2380,6 +2380,11 @@
   .pjcard input{width:100%;background:#241c46;border:1px solid #4a3f7a;color:#f4eeff;border-radius:10px;padding:12px;font-size:16px;margin-bottom:10px;box-sizing:border-box}
   .pjbtn{border:none;font-weight:800;font-size:15px;padding:12px;border-radius:11px;cursor:pointer;width:100%;background:linear-gradient(180deg,#ffd23e,#ffe58a);color:#2a2000}
   .pjbtn.g{background:transparent;border:1px solid #4a3f7a;color:#f4eeff;margin-top:8px}
+  .pjbtn.kakao{background:#FEE500;color:#191600;margin-top:8px}
+  .pjbtn.google{background:#fff;color:#1f1f1f;margin-top:8px;border:1px solid #dadce0}
+  .pjbtn.apple{background:#000;color:#fff;margin-top:8px;border:1px solid #333}
+  .pjor{display:flex;align-items:center;text-align:center;color:#6f6598;font-size:11px;margin:15px 0 3px}
+  .pjor::before,.pjor::after{content:"";flex:1;height:1px;background:#352c5c}.pjor span{padding:0 10px}
   .pjerr{color:#ff6b81;font-size:12.5px;min-height:15px;margin-top:8px}
   #pjFab{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:8000;background:#ffd23e;color:#2a2000;border:none;font-weight:800;font-size:13px;padding:10px 14px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer;display:none}
   .pjlist{list-style:none;margin:8px 0 0;padding:0}.pjlist li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #352c5c;font-size:14px}
@@ -2391,6 +2396,10 @@
   <input id="pjPw" type="password" placeholder="비밀번호" autocomplete="current-password">
   <button class="pjbtn" id="pjLoginBtn">로그인</button>
   <button class="pjbtn g" id="pjSignupBtn">계정 만들기 (최초 1회)</button>
+  <div class="pjor"><span>또는 간편 시작</span></div>
+  <button class="pjbtn kakao" id="pjKakao">💬 카카오로 시작</button>
+  <button class="pjbtn google" id="pjGoogle">Google로 시작</button>
+  <button class="pjbtn apple" id="pjApple"> Apple로 시작</button>
   <div class="pjerr" id="pjErr"></div>
 </div></div>
 <div id="pjLB"><div class="pjcard" style="max-width:440px">
@@ -2437,6 +2446,12 @@
   setInterval(pushState, 20000);
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
+  // 소셜 로그인(OAuth): 프로바이더로 이동 → 돌아오면 세션 생성 → onAuthStateChange가 loggedIn 호출.
+  function pjOAuth(provider){ $("pjErr").textContent="이동 중…"; sb.auth.signInWithOAuth({provider:provider, options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){ if(r.error)$("pjErr").textContent=r.error.message; }); }
+  $("pjKakao").onclick=function(){ pjOAuth("kakao"); };
+  $("pjGoogle").onclick=function(){ pjOAuth("google"); };
+  $("pjApple").onclick=function(){ pjOAuth("apple"); };
+  sb.auth.onAuthStateChange(function(evt,session){ if(session && $("pjLogin").style.display!=="none") loggedIn(); });
   $("pjLogout").onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
   $("pjClose").onclick=function(){ $("pjLB").style.display="none"; };
   function loadLB(){
