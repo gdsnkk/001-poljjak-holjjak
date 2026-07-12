@@ -372,6 +372,8 @@
   .clogrow { display:flex; align-items:center; justify-content:space-between; gap:8px; background:#17122e; border:2px solid var(--line); padding:7px 10px; }
   .clogrow .clr { display:flex; flex-direction:column; min-width:0; } .clogrow .clr b { font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .clogrow .clt { font-size:10px; color:var(--dim); }
   .clogrow .clv { font-weight:800; font-size:13px; white-space:nowrap; } .clogrow .clv.plus { color:#6ee7a0; } .clogrow .clv.minus { color:#ff7a8a; }
+  .clogrow .clright { display:flex; flex-direction:column; align-items:flex-end; white-space:nowrap; }
+  .clogrow .clbal { font-size:10.5px; color:var(--dim); font-weight:600; margin-top:1px; }
   .introbody { text-align:left; margin:6px 0 12px; }
   .introbody ul { margin:0; padding-left:2px; list-style:none; display:flex; flex-direction:column; gap:8px; }
   .introbody li { font-size:12.5px; line-height:1.45; color:var(--dim); padding-left:4px; }
@@ -960,7 +962,7 @@
   // 서버 동기화용 상태 화이트리스트(코인·닉·보유템·기기설정 제외 — 그건 따로/로컬).
   var PJ_STATE_KEYS=["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal","setsFound","eggsFound","secretSeen","badges","charLevels","charExp","boosters","blesses","doubles","sures","character","platform","accessory"];
   // 가변형(더 최신 것 채택 = serverNewer일 때만): 연속방문·출석·오늘의도전·미션 상태
-  var PJ_MUT_EXTRA=["streak","attDay","dailyPending","dailySettledDay","lastDailyRank","daily","missions","adDay","adCount"];
+  var PJ_MUT_EXTRA=["streak","attDay","dailyPending","dailySettledDay","lastDailyRank","daily","missions","adDay","adCount","dailyBoard","weeklyBoard","monthlyBoard"];
   window.PJ_GETSTATE=function(){ var o={}; PJ_STATE_KEYS.concat(PJ_MUT_EXTRA).forEach(function(k){ o[k]=st[k]; }); o.dailyRecord=st.dailyRecord; try{ o._board=loadBoard(); }catch(e){} return o; };
   window.PJ_APPLYSTATE=function(s, serverNewer){ if(!s||typeof s!=="object")return; var ch=false;
     ["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]>(st[k]||0)){ st[k]=s[k]; ch=true; } });
@@ -1814,7 +1816,7 @@
   function pushHist(s){ st.hist.push(s); if(st.hist.length>10)st.hist=st.hist.slice(st.hist.length-10); save(); renderHist(); }
 
   /* ---------- daily/missions bootstrap ---------- */
-  function ensureDaily(){ var t=dayKey(); if(st.daily.day!==t || !Array.isArray(st.daily.cats)){ st.daily={day:t,used:0,best:0,cap:3,cats:shuffledCats(t),reveals:[],lastPath:""}; save(); } if(st.daily.cap==null){ st.daily.cap=3; save(); } }
+  function ensureDaily(){ var t=dayKey(); if(st.daily.day!==t || !Array.isArray(st.daily.cats)){ st.daily={day:t,used:0,best:0,cap:3,cats:shuffledCats(t),reveals:[],lastPath:""}; save(); } if(st.daily.cap==null){ st.daily.cap=3; save(); } if(Array.isArray(st.daily.reveals)&&Array.isArray(st.daily.cats)&&st.daily.reveals.length>st.daily.cats.length){ st.daily.reveals.length=st.daily.cats.length; save(); }  /* 이전에 광고 재play로 3개 넘게 쌓인 운세 정리 */ }
   function settleDaily(){ var t=dayKey();
     if(st.dailyBoard.day && st.dailyBoard.day!==t && st.dailySettledDay!==st.dailyBoard.day){
       st.dailySettledDay=st.dailyBoard.day;
@@ -1854,9 +1856,16 @@
     (st.notifs||[]).forEach(function(n){ n.read=true; }); save(); var nb=$("noticeBtn"); if(nb)nb.classList.remove("alert"); }
   function renderCoinLog(){ var L=$("coinLogList"); L.innerHTML=""; $("coinLogBal").textContent=st.coins; var log=st.coinLog||[];
     if(!log.length){ L.innerHTML='<p class="lede" style="font-size:12px">아직 코인 내역이 없어요.</p>'; return; }
-    log.forEach(function(e){ var row=document.createElement("div"); row.className="clogrow";
-      row.innerHTML='<div class="clr"><b></b><span class="clt">'+e.t+'</span></div><span class="clv '+(e.d>=0?"plus":"minus")+'">'+(e.d>=0?"+":"")+e.d+' 🪙</span>'; row.querySelector("b").textContent=e.r; L.appendChild(row); }); }
-  function openCoinLog(){ renderCoinLog(); show("coinLogOv"); }
+    var running=st.coins;  // 최신 내역의 결과잔액=현재잔액. 위에서부터 델타를 빼며 역산.
+    log.forEach(function(e){ var row=document.createElement("div"); row.className="clogrow"; var balAfter=running; running-=(e.d||0);
+      row.innerHTML='<div class="clr"><b></b><span class="clt">'+e.t+'</span></div><div class="clright"><span class="clv '+(e.d>=0?"plus":"minus")+'">'+(e.d>=0?"+":"")+e.d+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.r; L.appendChild(row); }); }
+  // 서버 원장(coin_transactions)에서 받은 내역으로 재렌더 — 전체내역·기기간 동일·서버 기록 잔액(balance_after) 표시.
+  window.PJ_RENDERCOINLOG=function(rows){ if(!Array.isArray(rows)||!rows.length)return; var L=$("coinLogList"); if(!L)return; L.innerHTML="";
+    var running=st.coins;  // balance_after 없으면 현재잔액 기준 역산 폴백
+    rows.forEach(function(e){ var d=Number(e.delta)||0, row=document.createElement("div"); row.className="clogrow"; var t=""; try{ var dt=new Date(e.created_at); t=(dt.getMonth()+1)+"/"+dt.getDate()+" "+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2); }catch(_){}
+      var balAfter=(e.balance_after!=null)?Number(e.balance_after):running; running=balAfter-d;
+      row.innerHTML='<div class="clr"><b></b><span class="clt">'+t+'</span></div><div class="clright"><span class="clv '+(d>=0?"plus":"minus")+'">'+(d>=0?"+":"")+d+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.reason||""; L.appendChild(row); }); }
+  function openCoinLog(){ renderCoinLog(); show("coinLogOv"); if(window.PJ_FETCHCOINLOG) PJ_FETCHCOINLOG().then(function(rows){ if(rows&&rows.length&&window.PJ_RENDERCOINLOG) PJ_RENDERCOINLOG(rows); }); }
   function showIntro(mode){ var welcome=(mode==="welcome");
     if(welcome){ $("introKick").textContent="🐸"; $("introTitle").textContent="폴짝홀짝에 온 걸 환영해요!"; $("introBody").innerHTML=WELCOME_HTML; $("introOk").textContent="시작하기"; }
     else { $("introKick").textContent="✨"; $("introTitle").textContent="업데이트 소식!"; $("introBody").innerHTML=WHATSNEW_HTML; $("introOk").textContent="확인"; }
@@ -2413,6 +2422,8 @@
   async function pushState(){ if(!_pulledOnce)return; try{ var u=(await sb.auth.getUser()).data.user; if(!u||!window.PJ_GETSTATE)return; var s=PJ_GETSTATE(), j=JSON.stringify(s); if(j===_lastPushJSON)return; var ver=(new Date()).getTime(); await sb.rpc('save_game_state',{p_state:s,p_ver:ver}); _lastPushJSON=j; svSet(ver); }catch(e){} }
   // 획득 코스메틱을 서버에 기록(멱등). 상점 구매/가챠 획득 시 호출.
   window.PJ_GRANT=function(kind,id){ (async function(){ try{ await sb.rpc('grant_cosmetic',{p_kind:kind,p_id:id}); }catch(e){} })(); };
+  // 코인 원장 최근 50건(서버 진실 = 전체내역·기기간 동일·balance_after 잔액 포함).
+  window.PJ_FETCHCOINLOG=function(){ return (async function(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return []; var r=await sb.from("coin_transactions").select("delta,reason,balance_after,created_at").eq("user_id",u.id).order("created_at",{ascending:false}).limit(50); return (r&&r.data)?r.data:[]; }catch(e){ return []; } })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
   async function pullOwned(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("owned_cosmetics").select("kind,cosmetic_id").eq("user_id",u.id); if(r.error)return; var srv={character:{},platform:{},accessory:{}}; (r.data||[]).forEach(function(x){ if(srv[x.kind]) srv[x.kind][x.cosmetic_id]=1; }); var loc={character:[],platform:[],accessory:[]}; try{ var s=JSON.parse(localStorage.getItem("poljjak_state_v1")); if(s&&s.owned){ ["character","platform","accessory"].forEach(function(k){ loc[k]=(s.owned[k]||[]).slice(); }); } }catch(e){} ["character","platform","accessory"].forEach(function(k){ loc[k].forEach(function(id){ if(!srv[k][id]){ sb.rpc('grant_cosmetic',{p_kind:k,p_id:id}); srv[k][id]=1; } }); }); var merged={character:Object.keys(srv.character),platform:Object.keys(srv.platform),accessory:Object.keys(srv.accessory)}; if(window.PJ_MERGEOWNED) PJ_MERGEOWNED(merged); }catch(e){} }
   async function pullCoins(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins").eq("id",u.id).single(); if(r.data&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} }
