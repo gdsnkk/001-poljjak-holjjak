@@ -1506,11 +1506,24 @@
     armRound(); setPhase("ready"); updateEcon(); updateProb(); busy=true; setTimeout(resumeCountdown, 600); }  // 성공! 짧게 빵 → 카운트다운
   function resumeCountdown(){ busy=true; var seq=["3","2","1","시작!"], i=0; (function step(){ if(i<seq.length){ showCenterFx(seq[i]); sfx("tick"); vibrate(8); i++; setTimeout(step,220); } else { busy=false; } })(); }
   function onSaveLose(){ endSave(); hide("saveOv"); vibrate([45,35,70]); sfx("splash"); finishEndless("fall"); }
+  // 미니게임 레지스트리 (어드민 표시·가중치·난이도 config 대상). reactionGame은 colorGame과 중복이라 제외.
+  var MINIGAMES=[
+    {id:"timing",  fn:timingGame,  emoji:"⏱",  name:"타이밍 멈추기", how:"움직이는 노란 막대를 초록 칸에서 탭해 멈춰요."},
+    {id:"mash",    fn:mashGame,    emoji:"🔥",  name:"연타",        how:"게이지가 꽉 찰 때까지 빠르게 탭탭탭!"},
+    {id:"ring",    fn:ringGame,    emoji:"🎯",  name:"원 맞추기",   how:"줄어드는 노란 원이 초록 링과 겹치는 순간 탭!"},
+    {id:"hold",    fn:holdGame,    emoji:"✊",  name:"꾹 참기",     how:"꾹 눌러 채우고 초록 칸에서 손을 떼요(꽉 차기 전)."},
+    {id:"arrow",   fn:arrowGame,   emoji:"⬅➡", name:"방향 연타",   how:"화면에 뜬 화살표 방향을 빠르게 여러 번 탭!"},
+    {id:"balance", fn:balanceGame, emoji:"⚖️", name:"균형 잡기",   how:"치우친 반대쪽을 탭해 공을 가운데 초록칸에 유지·충전!"},
+    {id:"color",   fn:colorGame,   emoji:"🚦",  name:"신호등",      how:"초록일 때만 3번 탭! 빨강·대기 중 누르면 실패."},
+    {id:"whack",   fn:whackGame,   emoji:"🦫",  name:"두더지 잡기", how:"나타나는 목표를 사라지기 전에 정확히 콕!"}
+  ];
+  var MG_CFG={weights:{},diffBase:0,diffStep:1};  // 서버 config로 덮어씀(get_cfg 'minigames')
+  window.PJ_SETMGCFG=function(c){ if(c&&typeof c==="object"){ if(c.weights&&typeof c.weights==="object")MG_CFG.weights=c.weights; if(typeof c.diffBase==="number")MG_CFG.diffBase=c.diffBase; if(typeof c.diffStep==="number")MG_CFG.diffStep=c.diffStep; } };
+  function pickMinigame(){ var tot=0,ws=[]; MINIGAMES.forEach(function(m){ var w=(MG_CFG.weights&&MG_CFG.weights[m.id]!=null)?Number(MG_CFG.weights[m.id]):1; if(!(w>=0))w=1; ws.push(w); tot+=w; }); if(tot<=0)return MINIGAMES[Math.floor(Math.random()*MINIGAMES.length)].fn; var r=Math.random()*tot; for(var i=0;i<MINIGAMES.length;i++){ r-=ws[i]; if(r<=0)return MINIGAMES[i].fn; } return MINIGAMES[MINIGAMES.length-1].fn; }
   function startSaveGame(){
-    var d=saveCount; saveCount++;
-    $("saveTier").textContent=(d===0?"":"난이도 "+(d+1)+" · 갈수록 어려워져요!");
-    var games=[timingGame, mashGame, ringGame, reactionGame, holdGame, arrowGame, balanceGame, colorGame, whackGame];
-    var g=games[Math.floor(Math.random()*games.length)];
+    var d=(MG_CFG.diffBase||0)+saveCount*(MG_CFG.diffStep!=null?MG_CFG.diffStep:1); saveCount++;
+    $("saveTier").textContent=(saveCount<=1?"":"난이도 "+saveCount+" · 갈수록 어려워져요!");
+    var g=pickMinigame();
     show("saveOv");
     // short ready lock so a carried-over tap from jumping doesn't hit the mini-game
     saveRun=false; if(saveRAF){cancelAnimationFrame(saveRAF); saveRAF=0;} var ov=$("saveOv"); if(ov){ov.onpointerdown=null; ov.onpointerup=null;}
@@ -1702,7 +1715,7 @@
       ensureWeekly(); upsertPeriodEndless(st.weeklyBoard,used,runProb); }
     lastResult={mode:"endless",floor:floor,name:st.name,prob:runProb};
     save(); refreshTop(); if(rec&&floor>0) fireConfetti();
-    if(window.PJ_SUBMIT) PJ_SUBMIT('endless', floor, runProb, {character:st.character,platform:st.platform,accessory:st.accessory,lvl:charLevel(st.character)}, outcome==='cashout'?'cashout':'death');
+    if(window.PJ_SUBMIT) PJ_SUBMIT('endless', floor, runProb, {character:st.character,platform:st.platform,accessory:st.accessory,lvl:charLevel(st.character)}, outcome==='cashout'?'cashout':'death', gain);
     $("resFloor").textContent=floor; $("resCap").textContent="칸을 건넜어요";
     var kick=$("resKick"), note=$("resNote"), cl=$("resCoins"); cl.hidden=false;
     if(outcome==="cashout"){ kick.textContent="안전 회수 🏦"; note.textContent=rec?"★ 최고 기록도 경신! ★":"상금을 챙겼어요."; note.className=rec?"rnote rec":"rnote"; cl.innerHTML='+'+gain+' 🪙 <span class="m">상금</span>'; }
@@ -1733,7 +1746,7 @@
     var sorted=st.dailyBoard.entries.slice().sort(function(a,b){return b.floor-a.floor;}); for(var j=0;j<sorted.length;j++) if(normName(sorted[j].name)===k){rank=j+1;break;}
     lastResult={mode:"daily",floor:st.daily.best,name:st.name,fortune:(rv?rv.text:(st.daily.reveals[0]?st.daily.reveals[0].text:""))};
     save(); refreshTop(); if(floorNow>prevBest&&floorNow>0) fireConfetti();
-    if(window.PJ_SUBMIT) PJ_SUBMIT('daily', floorNow, 0.5, {character:st.character,platform:st.platform,accessory:st.accessory,lvl:charLevel(st.character)}, 'cashout');
+    if(window.PJ_SUBMIT) PJ_SUBMIT('daily', floorNow, 0.5, {character:st.character,platform:st.platform,accessory:st.accessory,lvl:charLevel(st.character)}, 'cashout', base);
     showDailyAttempt(rv,floorNow,base,done,rank);
   }
   function dailyResultCommon(){ $("resCap").textContent="칸을 건넜어요"; $("resProb").textContent=""; document.querySelector("#resultOv .board").hidden=true; $("resShareWrap").hidden=true; }
@@ -2446,7 +2459,7 @@
   var sb=window.supabase.createClient(URL,KEY); window.PJ_SB=sb;
   var $=function(id){return document.getElementById(id);};
   function gameName(){ try{ var raw=localStorage.getItem("poljjak_state_v1"); return raw?(JSON.parse(raw).name||"").trim().slice(0,8):""; }catch(e){ return ""; } }
-  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
+  window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome,reward){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome,p_reward:(typeof reward==="number"&&isFinite(reward)?Math.round(reward):null)}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };
@@ -2467,6 +2480,9 @@
   window.PJ_GRANT=function(kind,id){ (async function(){ try{ await sb.rpc('grant_cosmetic',{p_kind:kind,p_id:id}); }catch(e){} })(); };
   // 약관/개인정보 서버본 조회(테스터=draft, 그 외=live). 없으면 null → 게임 하드코딩 fallback.
   window.PJ_GETDOC=function(key){ return (async function(){ try{ var r=await sb.rpc('get_doc',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
+  window.PJ_GETCFG=function(key){ return (async function(){ try{ var r=await sb.rpc('get_cfg',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
+  // 미니게임 설정(가중치·난이도) 서버에서 로드 → 게임에 적용
+  PJ_GETCFG('minigames').then(function(c){ if(c&&window.PJ_SETMGCFG) PJ_SETMGCFG(c); });
   // 코인 원장 최근 50건(서버 진실 = 전체내역·기기간 동일·balance_after 잔액 포함).
   window.PJ_FETCHCOINLOG=function(){ return (async function(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return []; var r=await sb.from("coin_transactions").select("delta,reason,balance_after,created_at").eq("user_id",u.id).order("created_at",{ascending:false}).limit(50); return (r&&r.data)?r.data:[]; }catch(e){ return []; } })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
