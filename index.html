@@ -750,6 +750,8 @@
   // 어드민 갓챠 가중치 config 적용(get_cfg 'gacha'). gachaOdds()가 RW로 계산하므로 인게임 확률표기도 자동 반영.
   window.PJ_SETGACHA=function(c){ if(c&&c.weights){ ["common","rare","epic","legend"].forEach(function(r){ var w=c.weights[r]; if(typeof w==="number"&&w>=0) RW[r]=w; }); } };
   var RPRICE = { common:150, rare:300, epic:550, legend:950 };
+  // 어드민 상점 config: 등급별 코스메틱 가격 + 소모템 가격/활성. get_cfg('shop').
+  window.PJ_SETSHOP=function(c){ if(!c)return; if(c.rarityPrice){ ["common","rare","epic","legend"].forEach(function(r){ var p=c.rarityPrice[r]; if(typeof p==="number"&&p>=0) RPRICE[r]=p; }); } if(c.items&&typeof ITEMS!=="undefined"){ ITEMS.forEach(function(it){ var o=c.items[it.id]; if(o){ if(typeof o.price==="number"&&o.price>=0) it.price=o.price; it.active=(o.active!==false); } }); if(typeof renderShop==="function"){try{}catch(e){}} } };
   var RCOL = { common:"#a99ed6", rare:"#63e0ff", epic:"#b98cff", legend:"#ffd23e" };
   var RNAME = { common:"일반", rare:"레어", epic:"에픽", legend:"전설" };
   function cprice(it){ return RPRICE[it.r||"common"]; }
@@ -1879,16 +1881,21 @@
 
   /* ---------- screens/hub ---------- */
   function showScreen(w){ $("hub").classList.toggle("on",w==="hub"); $("play").classList.toggle("on",w==="play"); $("backBtn").style.visibility=w==="play"?"visible":"hidden"; $("topStats").style.display=w==="play"?"none":""; $("homeLogo").style.display=w==="play"?"none":"inline"; $("backBtn").style.display=w==="play"?"inline":"none"; }
+  function ntcRow(L, title, date, bodyHTML){ var wrap=document.createElement("div"); wrap.className="ntc";
+    wrap.innerHTML='<button class="ntc-h"><span><b></b><br><span class="ntc-d"></span></span><span class="ntc-arrow">▾</span></button><div class="ntc-b" hidden></div>';
+    wrap.querySelector("b").textContent=title; wrap.querySelector(".ntc-d").textContent=date||""; wrap.querySelector(".ntc-b").innerHTML=bodyHTML;
+    var h=wrap.querySelector(".ntc-h"), b=wrap.querySelector(".ntc-b"), ar=wrap.querySelector(".ntc-arrow");
+    h.onclick=function(){ var op=b.hidden; b.hidden=!op; ar.textContent=op?"▴":"▾"; }; L.appendChild(wrap); }
   function renderNotices(){ var L=$("noticeList"); L.innerHTML="";
     var nf=st.notifs||[];
     if(nf.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
-        el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); });
-      L.insertAdjacentHTML("beforeend",'<div class="sect">📢 공지사항</div>'); }
-    NOTICES.forEach(function(n,i){ var wrap=document.createElement("div"); wrap.className="ntc";
-      wrap.innerHTML='<button class="ntc-h"><span><b>'+n.title+'</b><br><span class="ntc-d">'+n.date+'</span></span><span class="ntc-arrow">▾</span></button><div class="ntc-b" hidden>'+n.body+'</div>';
-      var h=wrap.querySelector(".ntc-h"), b=wrap.querySelector(".ntc-b"), ar=wrap.querySelector(".ntc-arrow");
-      h.onclick=function(){ var op=b.hidden; b.hidden=!op; ar.textContent=op?"▴":"▾"; }; L.appendChild(wrap); });
+        el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); }); }
+    var ann=window.PJ_ANN||[];
+    if(ann.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📢 공지사항</div>');
+      ann.forEach(function(n){ var img=n.image_url?('<img src="'+n.image_url+'" alt="" style="width:100%;border-radius:8px;margin-top:8px;display:block">'):''; var body=String(n.body||"").replace(/\n/g,"<br>")+img; ntcRow(L, n.title||"", String(n.created_at||"").slice(0,10), body); }); }
+    if(NOTICES.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>');
+      NOTICES.forEach(function(n){ ntcRow(L, n.title, n.date, n.body); }); }
     (st.notifs||[]).forEach(function(n){ n.read=true; }); save(); var nb=$("noticeBtn"); if(nb)nb.classList.remove("alert"); }
   function renderCoinLog(){ var L=$("coinLogList"); L.innerHTML=""; $("coinLogBal").textContent=st.coins; var log=st.coinLog||[];
     if(!log.length){ L.innerHTML='<p class="lede" style="font-size:12px">아직 코인 내역이 없어요.</p>'; return; }
@@ -2052,7 +2059,7 @@
       body.appendChild(grid); });
     $("gachaBtn").onclick=doGacha;
     body.insertAdjacentHTML("beforeend",'<div class="sect">게임 중 아이템 (미리 사두고 판 안에서 사용)</div>');
-    ITEMS.filter(function(it){return it.kind==="turn";}).forEach(function(it){ var row=document.createElement("div"); row.className="item-row";
+    ITEMS.filter(function(it){return it.kind==="turn" && it.active!==false;}).forEach(function(it){ var row=document.createElement("div"); row.className="item-row";
       row.innerHTML='<span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'<span class="q">보유 '+st[it.cnt]+'</span></div><div class="idc">'+it.desc+'</div></div><button class="bu">🪙'+it.price+'</button>';
       var bu=row.querySelector(".bu"); bu.disabled=st.coins<it.price; bu.onclick=function(){ if(st.coins<it.price)return; st.coins-=it.price; logCoin(-it.price,"🛍 "+it.name); st[it.cnt]++; sfx("coin"); save(); refreshTop(); renderShop(); toast(it.name+" +1"); };
       $("shopBody").appendChild(row); });
@@ -2065,7 +2072,7 @@
     var s=computeStats(); var luck=s.luck+(st.useCharm?CHARM_LUCK:0);
     $("loadoutProb").innerHTML='능력 <b style="color:var(--gold2)">🍀'+s.luck+' 💰'+s.bounty+' 🪶'+s.revive+'</b> · 확률 <b style="color:var(--gold2)">'+(luck>0?'50%+'+luck+'%':'50%')+'</b>';
     var wrap=$("loadoutList"); wrap.innerHTML="";
-    ITEMS.filter(function(it){ return it.kind==="run"; }).forEach(function(it){ var on=st[it.use];
+    ITEMS.filter(function(it){ return it.kind==="run" && it.active!==false; }).forEach(function(it){ var on=st[it.use];
       var row=document.createElement("div"); row.className="item-row loadrow"+(on?" on":"");
       row.innerHTML='<span class="lchk">'+(on?"☑":"☐")+'</span><span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'</div><div class="tag">'+it.desc+'</div></div><span class="lprice">🪙'+it.price+'</span>';
       row.onclick=function(){ if(!st[it.use] && loadoutCost()+it.price>st.coins){ toast("코인이 부족해요"); return; } st[it.use]=!st[it.use]; save(); renderLoadoutModal(); };
@@ -2495,6 +2502,11 @@
   PJ_GETCFG('minigames').then(function(c){ if(c&&window.PJ_SETMGCFG) PJ_SETMGCFG(c); });
   // 갓챠 등급 가중치 로드
   PJ_GETCFG('gacha').then(function(c){ if(c&&window.PJ_SETGACHA) PJ_SETGACHA(c); });
+  // 상점 가격·활성 로드
+  PJ_GETCFG('shop').then(function(c){ if(c&&window.PJ_SETSHOP) PJ_SETSHOP(c); });
+  // 서버 공지 로드(활성·기간내). 공지 버튼 열 때 최신으로 다시 노출됨.
+  window.PJ_ANN=[];
+  sb.rpc('get_announcements').then(function(r){ window.PJ_ANN=(r&&r.data)?r.data:[]; var nb=document.getElementById("noticeBtn"); if(nb&&window.PJ_ANN.length)nb.classList.add("alert"); }).catch(function(){});
   // 코인 원장 최근 50건(서버 진실 = 전체내역·기기간 동일·balance_after 잔액 포함).
   window.PJ_FETCHCOINLOG=function(){ return (async function(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return []; var r=await sb.from("coin_transactions").select("delta,reason,balance_after,created_at").eq("user_id",u.id).order("created_at",{ascending:false}).limit(50); return (r&&r.data)?r.data:[]; }catch(e){ return []; } })(); };
   // 서버 보유템 내려받아 로컬과 합침 + 로컬에만 있던 것(레거시)은 서버로 올려 양방향 치유.
