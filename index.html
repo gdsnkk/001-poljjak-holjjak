@@ -954,6 +954,7 @@
   function save(){ try{localStorage.setItem(LS_STATE,JSON.stringify(st));}catch(e){} }
   var st = load();
   window.PJ_SETCOINS=function(c){ if(typeof c==="number"&&!isNaN(c)){ st.coins=c; save(); if(typeof refreshTop==="function")refreshTop(); if(typeof refreshHub==="function")refreshHub(); } };
+  window.PJ_SETNAME=function(n){ if(typeof n==="string"){ n=n.trim().slice(0,8); if(n&&n!==st.name){ st.name=n; save(); if(typeof refreshHub==="function")refreshHub(); if(typeof refreshTop==="function")refreshTop(); } } };
 
   function normName(n){ return String(n).trim().toLowerCase(); }
   var NICK_ADJ=["말랑","폭신","보들","몽실","뽀짝","쫀득","방긋","꼬물","통통","반짝","살랑","포동","도톰","오동","촉촉","몰랑","부끄","새침","엉뚱","씩씩","활짝","나른","노곤","데굴","말똥","초롱","방실","소복","함박","뭉게","뒤뚱","아장","사뿐","팔랑","방방","콩닥","두근","살금","까꿍","옹골"];
@@ -2379,9 +2380,11 @@
   window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
-  function loggedIn(){ $("pjLogin").style.display="none"; syncName(); pullCoins(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
+  function loggedIn(){ $("pjLogin").style.display="none"; pullProfile(); var rb=document.getElementById("rankBtn"); if(rb) rb.onclick=function(){ $("pjLB").style.display="flex"; loadLB(); }; }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
+  // 로그인 시: 서버 프로필을 진실로 삼아 코인+닉네임을 내려받음. 서버 닉네임이 비어있을 때만 로컬 이름을 올림.
+  async function pullProfile(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins,nickname").eq("id",u.id).single(); if(!r.data)return; if(window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); var sn=(r.data.nickname||"").trim(); if(sn){ if(window.PJ_SETNAME) PJ_SETNAME(sn); } else { syncName(); } }catch(e){} }
   async function pullCoins(){ try{ var u=(await sb.auth.getUser()).data.user; if(!u)return; var r=await sb.from("profiles").select("coins").eq("id",u.id).single(); if(r.data&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} }
   sb.auth.getSession().then(function(r){ if(r.data.session) loggedIn(); });
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
