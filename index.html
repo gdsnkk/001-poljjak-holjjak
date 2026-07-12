@@ -2389,8 +2389,15 @@
 
 <!-- ================= 서버 연동 (슬라이스 1) ================= -->
 <style>
-  #pjLogin,#pjLB{position:fixed;inset:0;z-index:9000;background:rgba(10,8,22,.96);display:flex;align-items:center;justify-content:center;padding:20px;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif}
-  #pjLB{display:none;align-items:flex-start;overflow:auto}
+  #pjLogin{position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif;color:#f4eeff;background:radial-gradient(120% 75% at 50% 0%,#241a4d 0%,#130f2a 58%,#0b0818 100%);padding:calc(46px + env(safe-area-inset-top,0px)) 26px calc(30px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+  #pjLB{position:fixed;inset:0;z-index:9000;background:rgba(10,8,22,.96);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif}
+  #pjLogin .pjhero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+  #pjLogin .pjmasc{font-size:74px;line-height:1;filter:drop-shadow(0 6px 0 rgba(0,0,0,.3))}
+  #pjLogin .pjname{font-size:34px;font-weight:900;letter-spacing:-.5px;color:#ffe58a;text-shadow:0 2px 0 #6b4e00;margin:0}
+  #pjLogin .pjtag{font-size:13.5px;color:#a99ed6;line-height:1.55;max-width:290px;margin:0}
+  #pjLogin .pjauth{width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+  #pjLogin .pjauth .pjbtn{margin-top:0}
+  #pjLogin input{width:100%;background:#241c46;border:1px solid #4a3f7a;color:#f4eeff;border-radius:10px;padding:12px;font-size:16px;box-sizing:border-box}
   .pjcard{background:#1e1740;border:1px solid #4a3f7a;border-radius:16px;padding:22px;max-width:380px;width:100%;color:#f4eeff;box-sizing:border-box}
   .pjcard h2{margin:0 0 4px;font-size:18px}.pjcard p{margin:0 0 16px;color:#a99ed6;font-size:12.5px}
   .pjcard input{width:100%;background:#241c46;border:1px solid #4a3f7a;color:#f4eeff;border-radius:10px;padding:12px;font-size:16px;margin-bottom:10px;box-sizing:border-box}
@@ -2406,19 +2413,25 @@
   .pjlist{list-style:none;margin:8px 0 0;padding:0}.pjlist li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #352c5c;font-size:14px}
   .pjrk{color:#a99ed6;width:26px;display:inline-block}.pjsc{color:#ffe58a;font-weight:800}
 </style>
-<div id="pjLogin"><div class="pjcard">
-  <h2>🐸 폴짝홀짝 온라인</h2><p>로그인하면 기록이 저장되고, 기기를 바꿔도 복원돼요</p>
-  <button class="pjbtn google" id="pjGoogle">Google로 시작</button>
-  <button class="pjbtn apple" id="pjApple"> Apple로 시작</button>
-  <div class="pjerr" id="pjErr"></div>
-  <div id="pjEmailBox" style="display:none;margin-top:6px">
-    <input id="pjEmail" type="email" placeholder="이메일" autocomplete="username">
-    <input id="pjPw" type="password" placeholder="비밀번호" autocomplete="current-password">
-    <button class="pjbtn" id="pjLoginBtn">로그인</button>
-    <button class="pjbtn g" id="pjSignupBtn">계정 만들기</button>
+<div id="pjLogin">
+  <div class="pjhero">
+    <div class="pjmasc">🐸</div>
+    <h1 class="pjname">폴짝홀짝</h1>
+    <p class="pjtag">운(運)으로 징검다리 폴짝!<br>로그인하면 기록이 저장되고,<br>기기를 바꿔도 그대로 복원돼요.</p>
   </div>
-  <button id="pjEmailToggle" style="background:none;border:none;color:#6f6598;font-size:11px;margin-top:12px;cursor:pointer;width:100%">이메일로 로그인 ›</button>
-</div></div>
+  <div class="pjauth">
+    <button class="pjbtn google" id="pjGoogle">Google로 시작</button>
+    <button class="pjbtn apple" id="pjApple"> Apple로 시작</button>
+    <div class="pjerr" id="pjErr"></div>
+    <div id="pjEmailBox" style="display:none;flex-direction:column;gap:9px">
+      <input id="pjEmail" type="email" placeholder="이메일" autocomplete="username">
+      <input id="pjPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+      <button class="pjbtn" id="pjLoginBtn">로그인</button>
+      <button class="pjbtn g" id="pjSignupBtn">계정 만들기</button>
+    </div>
+    <button id="pjEmailToggle" style="background:none;border:none;color:#6f6598;font-size:11.5px;margin-top:4px;cursor:pointer;width:100%">이메일로 로그인 ›</button>
+  </div>
+</div>
 <div id="pjLB"><div class="pjcard" style="max-width:440px">
   <h2>🏆 온라인 랭킹 <button class="pjbtn g" id="pjClose" style="width:auto;float:right;padding:6px 12px;margin:0">닫기</button></h2>
   <div style="font-size:12px;color:#a99ed6;margin-bottom:2px">엔드리스 역대 TOP20</div><ol class="pjlist" id="pjRank"></ol>
@@ -2472,7 +2485,7 @@
   function pjOAuth(provider){ $("pjErr").textContent="이동 중…"; sb.auth.signInWithOAuth({provider:provider, options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){ if(r.error)$("pjErr").textContent=r.error.message; }); }
   $("pjGoogle").onclick=function(){ pjOAuth("google"); };
   $("pjApple").onclick=function(){ pjOAuth("apple"); };
-  $("pjEmailToggle").onclick=function(){ var b=$("pjEmailBox"); b.style.display=(b.style.display==="none")?"block":"none"; };
+  $("pjEmailToggle").onclick=function(){ var b=$("pjEmailBox"); b.style.display=(b.style.display==="none")?"flex":"none"; };
   sb.auth.onAuthStateChange(function(evt,session){ if(session && $("pjLogin").style.display!=="none") loggedIn(); });
   $("pjLogout").onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
   $("pjClose").onclick=function(){ $("pjLB").style.display="none"; };
