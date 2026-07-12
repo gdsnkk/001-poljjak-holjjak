@@ -594,6 +594,7 @@
   <div class="setrow"><span>🔔 푸시 알림</span><label class="switch"><input type="checkbox" id="setPush"><span></span></label></div>
   <button class="setrow" id="setSuggest">💡 제안하기 ›</button>
   <button class="setrow" id="setTerms">📄 서비스 이용약관 ›</button>
+  <button class="setrow" id="setLogout">🚪 로그아웃 <b id="setAccVal" style="font-size:10.5px;color:var(--dim);font-weight:600"></b></button>
   <button class="setrow" id="setDelete" style="color:var(--red)">🗑️ 데이터 초기화 (탈퇴) ›</button>
   <button class="btn ghost" id="settingsClose">닫기</button>
 </div></div>
@@ -1875,7 +1876,7 @@
       hide("introOv"); st.onboarded=true; st.seenVersion=APP_VERSION; save(); }; }
   function updateSelDisplays(){ if($("selHome"))$("selHome").textContent=st.homeBgm>0?HOME_BGM[st.homeBgm-1].name:"끄기"; if($("selGame"))$("selGame").textContent=st.gameBgm>0?GAME_BGM[st.gameBgm-1].name:"끄기"; if($("selSfx"))$("selSfx").textContent=SFX_NAMES[st.sfxStyle]||"끄기"; }
   function selCycle(kind,dir){ if(kind==="home"){ var n=HOME_BGM.length+1; st.homeBgm=((st.homeBgm+dir)%n+n)%n; } else if(kind==="game"){ var g=GAME_BGM.length+1; st.gameBgm=((st.gameBgm+dir)%g+g)%g; } else { st.sfxStyle=((st.sfxStyle+dir)%3+3)%3; } save(); updateSelDisplays(); if(kind==="sfx"){ if(st.sfxStyle>0)sfx("coin"); } else { playBgmNow(); } }
-  function openSettings(){ $("setNameVal").textContent=st.name||"익명"; updateSelDisplays(); $("setVibe").checked=st.vibeOn!==false; $("setPush").checked=st.pushOn!==false; show("settingsOv"); }
+  function openSettings(){ $("setNameVal").textContent=st.name||"익명"; updateSelDisplays(); $("setVibe").checked=st.vibeOn!==false; $("setPush").checked=st.pushOn!==false; var av=$("setAccVal"); if(av) av.textContent=window.PJ_EMAIL?("("+window.PJ_EMAIL+")"):""; show("settingsOv"); }
   function showRankDetail(e){ $("rdName").textContent=e.name;
     var cv=$("rdCanvas"), x=cv.getContext("2d"); x.imageSmoothingEnabled=false; x.clearRect(0,0,cv.width,cv.height); drawStoneTop(x,platById(e.plat||"stone"),cv.width/2,cv.height-14,false,1); drawChar(x,charById(e.char||"chick"),cv.width/2,cv.height-15,false,e.acc||"none",e.lvl||1);
     $("rdChar").innerHTML=charById(e.char||"chick").name+' <span style="color:var(--gold)">'+stars(e.lvl||1)+'</span>';
@@ -2268,6 +2269,7 @@
   $("suggestSend").onclick=function(){ var t=$("suggestText").value.trim(); if(!t){ toast("내용을 적어주세요"); return; } try{ window.location.href='mailto:?subject='+encodeURIComponent('폴짝 제안')+'&body='+encodeURIComponent(t); }catch(e){ toast("메일 앱을 열 수 없어요"); } };
   $("setTerms").onclick=function(){ $("termsBody").innerHTML=TERMS; show("termsOv"); };
   $("termsClose").onclick=function(){ hide("termsOv"); };
+  $("setLogout").onclick=function(){ if(window.PJ_LOGOUT){ if(confirm("로그아웃할까요? 다시 로그인하면 기록이 복원돼요.")) window.PJ_LOGOUT(); } else { toast("로그인 정보가 없어요"); } };
   $("setDelete").onclick=function(){ if(confirm("모든 데이터(코인·기록·아이템)가 삭제됩니다. 계속할까요?")){ try{ localStorage.removeItem(LS_STATE); localStorage.removeItem(LS_BOARD); }catch(e){} location.reload(); } };
   $("byeBack").onclick=function(){ hide("byeOv"); goHub(); };
   // hardware/browser back → close overlays / leave play / show goodbye on home
@@ -2418,7 +2420,8 @@
   window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
-  function loggedIn(){ $("pjLogin").style.display="none"; pullProfile(); }
+  window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };
+  function loggedIn(){ $("pjLogin").style.display="none"; sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); pullProfile(); }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
   // 로그인 시: 서버 프로필을 진실로 삼아 코인+닉네임을 내려받음. 서버 닉네임이 비어있을 때만 로컬 이름을 올림.
