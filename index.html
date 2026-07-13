@@ -648,7 +648,7 @@
 <script>
 (function () {
   var LS_STATE = "poljjak_state_v1", LS_BOARD = "poljjak_board_v1";
-  var SUSPENSE = 200, CHARM_LUCK = 10, FEATHER_REVIVE = 50, DEATH_KEEP = 0.50, BOOST_LUCK = 40;
+  var SUSPENSE = 200, CHARM_LUCK = 10, FEATHER_REVIVE = 50, DEATH_KEEP = 1.0, BOOST_LUCK = 40;  /* 그만하기 제거 → 끝까지 가서 모은 것 100% */
   var DAILY_REWARDS = [500,300,100];
   var REWARD_NOTE = '🏅 순위 보상 · 1등 🪙500 · 2등 🪙300 · 3등 🪙100';
   var TEAM_REWARD_NOTE = '🏅 팀 순위 보상 · 1등 각 🪙500 · 2등 각 🪙300 · 3등 각 🪙100';
@@ -771,7 +771,9 @@
     { id:"dino",   name:"뿔룡",   r:"legend", body:"#7fd06a", body2:"#4f9a3c", feat:"dino",   luck:5, bounty:12, revive:5,  jh:24, jd:380 },
     { id:"phantom",name:"밤도깨비", r:"legend", secret:true, unlock:600,   body:"#7a5be0", body2:"#4a2fa8", feat:"ghost",  luck:8,  bounty:8,  revive:10, jh:28, jd:460 },
     { id:"drake",  name:"아기용",   r:"legend", secret:true, unlock:3500,  body:"#ff6f4a", body2:"#c8371f", feat:"dino",   luck:6,  bounty:16, revive:6,  jh:26, jd:360 },
-    { id:"unicorn",name:"유니콘",   r:"legend", secret:true, unlock:16000, body:"#ffc6e6", body2:"#e58ac0", feat:"rabbit", luck:12, bounty:10, revive:12, jh:30, jd:340 }
+    { id:"unicorn",name:"유니콘",   r:"legend", secret:true, unlock:16000, body:"#ffc6e6", body2:"#e58ac0", feat:"rabbit", luck:12, bounty:10, revive:12, jh:30, jd:340 },
+    { id:"angel",  name:"천사",     r:"legend", body:"#f8f8ff", body2:"#d4d4ee", feat:"angel", luck:0,  bounty:0,  revive:14, jh:30, jd:420 },
+    { id:"demon",  name:"악마",     r:"legend", body:"#a8324a", body2:"#6a1e30", feat:"demon", luck:6,  bounty:12, revive:0,  jh:24, jd:360 }
   ];
   function secretChars(){ return CHARACTERS.filter(function(c){return c.secret;}); }
   function secretUnlocked(c){ return st.totalDist >= (c.unlock||0); }
@@ -857,7 +859,9 @@
     { id:"candy", name:"사탕",     r:"epic",   luck:0, bounty:9,  revive:0 },
     { id:"jelly", name:"젤리",     r:"epic",   luck:3, bounty:6,  revive:0 },
     { id:"glass", name:"유리",     r:"epic",   luck:0, bounty:12, revive:0 },
-    { id:"gold",  name:"황금",     r:"legend", luck:0, bounty:20, revive:0 }
+    { id:"gold",  name:"황금",     r:"legend", luck:0, bounty:20, revive:0 },
+    { id:"rainbow", name:"무지개",  r:"epic",   luck:6, bounty:4, revive:0 },
+    { id:"lava",    name:"지옥용암",r:"legend", luck:0, bounty:12, revive:4 }
   ];
   var ACCESSORIES = [
     { id:"none",     name:"없음",     r:"common", em:"—", luck:0, bounty:0, revive:0 },
@@ -879,7 +883,10 @@
     { id:"net",      name:"잠자리채", r:"rare",   em:"🥅", luck:3, bounty:2 },
     { id:"flyswatter",name:"파리채",  r:"rare",   em:"🪰", bounty:4 },
     { id:"fishingrod",name:"낚싯대",  r:"epic",   em:"🎣", bounty:4, revive:2 },
-    { id:"crown",    name:"왕관",     r:"legend", em:"👑", luck:5, bounty:5 }
+    { id:"crown",    name:"왕관",     r:"legend", em:"👑", luck:5, bounty:5 },
+    { id:"angelwing",  name:"천사날개",   r:"legend", em:"🪽", luck:0, bounty:0, revive:8 },
+    { id:"trident",    name:"악마삼지창", r:"epic",   em:"🔱", luck:0, bounty:8, revive:0 },
+    { id:"demontail",  name:"악마꼬리",   r:"rare",   em:"😈", luck:5, bounty:0, revive:0 }
   ];
   var SETS = [
     { id:"chickout",  name:"삐약이의 봄나들이", ch:"chick",   plat:"wood",  acc:"ribbon",   luck:4 },
@@ -898,7 +905,9 @@
     { id:"fairytale", name:"요정 이야기",         ch:"chick",   plat:"cloud", acc:"tinkerbell", luck:6, revive:4 },
     { id:"bugcatch",  name:"곤충 채집가",         ch:"frog",    plat:"leaf",  acc:"net",      luck:5, bounty:5 },
     { id:"angler",    name:"낚시왕",              ch:"cat",     plat:"lily",  acc:"fishingrod", bounty:9, revive:3 },
-    { id:"pestbuster",name:"파리 소탕단",         ch:"dog",     plat:"mushroom", acc:"flyswatter", bounty:7, luck:3 }
+    { id:"pestbuster",name:"파리 소탕단",         ch:"dog",     plat:"mushroom", acc:"flyswatter", bounty:7, luck:3 },
+    { id:"heavenguard",name:"천상의 수호천사",     ch:"angel",   plat:"rainbow", acc:"angelwing", revive:20, luck:5 },
+    { id:"helllord",   name:"지옥의 군주",          ch:"demon",   plat:"lava",    acc:"trident",   bounty:22, luck:8 }
   ];
   var ITEMS = [
     { id:"charm",   ic:"🍀", name:"행운의 부적", price:120, use:"useCharm",   kind:"run",  tag:"판 내내", desc:"이번 판 생존 확률 +10%" },
@@ -1122,6 +1131,9 @@
     else if(id==="net"){ rect(ctx,x0+14,y0+4,1,9,"#9a7038"); rect(ctx,x0+11,y0,7,1,"#cfc6f2"); rect(ctx,x0+11,y0,1,4,"#cfc6f2"); rect(ctx,x0+17,y0,1,4,"#cfc6f2"); rect(ctx,x0+11,y0+3,7,1,"#cfc6f2"); rect(ctx,x0+12,y0+1,5,2,"#dfeaff"); }
     else if(id==="flyswatter"){ rect(ctx,x0+14,y0+5,1,8,"#9a7038"); rect(ctx,x0+12,y0+1,5,4,"#e05c96"); rect(ctx,x0+13,y0+2,1,1,"#ff9ecb"); rect(ctx,x0+15,y0+3,1,1,"#ff9ecb"); rect(ctx,x0+14,y0+1,1,1,"#ff9ecb"); rect(ctx,x0+18,y0+7,2,1,"#2a2a2a"); rect(ctx,x0+18,y0+6,1,1,"#63e0ff"); rect(ctx,x0+20,y0+6,1,1,"#63e0ff"); }
     else if(id==="fishingrod"){ rect(ctx,x0+13,y0+11,1,2,"#9a7038"); rect(ctx,x0+14,y0+7,1,4,"#a87c48"); rect(ctx,x0+15,y0+3,1,4,"#a87c48"); rect(ctx,x0+16,y0+1,2,2,"#a87c48"); rect(ctx,x0+18,y0+2,1,6,"#dfeaff"); rect(ctx,x0+17,y0+8,3,2,"#ff8c3a"); rect(ctx,x0+16,y0+9,1,1,"#ff8c3a"); rect(ctx,x0+19,y0+8,1,1,"#ffffff"); }
+    else if(id==="angelwing"){ rect(ctx,x0-4,y0+2,3,2,"#ffffff"); rect(ctx,x0-5,y0+4,4,2,"#eef0ff"); rect(ctx,x0-4,y0+6,3,2,"#ffffff"); rect(ctx,x0-3,y0+8,2,1,"#dfe4ff"); rect(ctx,x0+13,y0+2,3,2,"#ffffff"); rect(ctx,x0+13,y0+4,4,2,"#eef0ff"); rect(ctx,x0+13,y0+6,3,2,"#ffffff"); rect(ctx,x0+13,y0+8,2,1,"#dfe4ff"); }
+    else if(id==="trident"){ rect(ctx,x0+14,y0+1,1,11,"#5a2a2a"); rect(ctx,x0+12,y0,5,1,"#c0392b"); rect(ctx,x0+12,y0-2,1,3,"#c0392b"); rect(ctx,x0+14,y0-3,1,4,"#e05c3a"); rect(ctx,x0+16,y0-2,1,3,"#c0392b"); rect(ctx,x0+12,y0-3,1,1,"#ffd23e"); rect(ctx,x0+16,y0-3,1,1,"#ffd23e"); rect(ctx,x0+14,y0-4,1,1,"#ffe58a"); }
+    else if(id==="demontail"){ rect(ctx,x0+12,y0+6,2,2,"#8a1a2a"); rect(ctx,x0+13,y0+8,2,2,"#8a1a2a"); rect(ctx,x0+14,y0+10,2,2,"#a8324a"); rect(ctx,x0+16,y0+11,2,3,"#c0392b"); rect(ctx,x0+18,y0+12,1,1,"#c0392b"); rect(ctx,x0+15,y0+12,1,1,"#c0392b"); rect(ctx,x0+17,y0+10,1,1,"#e05c3a"); }
   }
   function drawAccIcon(ctx, id){ if(!id||id==="none")return; var CW=ctx.canvas.width, CH=ctx.canvas.height, S=32;
     var tmp=document.createElement("canvas"); tmp.width=tmp.height=S; var t=tmp.getContext("2d"); t.imageSmoothingEnabled=false;
@@ -1144,6 +1156,8 @@
     if(c.feat==="rabbit"){ rect(ctx,x0+2,y0-6,2,7,c.body); rect(ctx,x0+8,y0-6,2,7,c.body); rect(ctx,x0+2,y0-4,2,3,"#ff9ec7"); rect(ctx,x0+8,y0-4,2,3,"#ff9ec7"); }
     if(c.feat==="bear"){ rect(ctx,x0+1,y0-2,3,3,c.body); rect(ctx,x0+8,y0-2,3,3,c.body); rect(ctx,x0+2,y0-1,1,1,c.body2); rect(ctx,x0+9,y0-1,1,1,c.body2); }
     if(c.feat==="fox"){ rect(ctx,x0+1,y0-3,3,4,c.body); rect(ctx,x0+8,y0-3,3,4,c.body); rect(ctx,x0+2,y0-2,1,2,"#20232e"); rect(ctx,x0+9,y0-2,1,2,"#20232e"); }
+    if(c.feat==="angel"){ rect(ctx,x0+3,y0-6,6,1,"#ffe58a"); rect(ctx,x0+2,y0-5,1,1,"#ffe58a"); rect(ctx,x0+9,y0-5,1,1,"#ffe58a"); rect(ctx,x0+4,y0-5,4,1,"#fff6c8"); }
+    if(c.feat==="demon"){ rect(ctx,x0+1,y0-2,2,2,"#6a1420"); rect(ctx,x0+9,y0-2,2,2,"#6a1420"); rect(ctx,x0+1,y0-3,1,1,"#8a1a2a"); rect(ctx,x0+10,y0-3,1,1,"#8a1a2a"); }
     for(var r=0;r<BODY.length;r++){ var row=BODY[r]; var yy=y0+r; for(var cc=0;cc<row.length;cc++){ if(row[cc]==="1"){ var col=c.body; if(c.feat==="kid"){ if(r<3)col="#4a3a2a"; else if(r<5)col="#ffcfa8"; else col=c.body; } if(c.feat==="ghost"&&r>=9){ if((cc+r)%2===0) continue; } rect(ctx,x0+cc,yy,1,1,col); } } }
     rect(ctx,x0+2,y0+bh-1,8,1,c.body2);
     if(c.feat==="panda"){ rect(ctx,x0+2,y0+3,3,3,"#2a2a33"); rect(ctx,x0+7,y0+3,3,3,"#2a2a33"); }
@@ -1168,6 +1182,8 @@
     if(acc&&acc!=="none") drawAcc(ctx,acc,x0,y0);
     if(lvl>=3){ rect(ctx,x0-1,y0+4,1,3,"#ffd23e"); rect(ctx,x0+12,y0+4,1,3,"#ffd23e"); rect(ctx,x0+4,y0-1,4,1,"#ffd23e"); rect(ctx,x0+2,y0+bh,1,1,"#ffd23e"); rect(ctx,x0+9,y0+bh,1,1,"#ffd23e"); }
     if(lvl>=2){ rect(ctx,x0+11,y0-1,1,1,"#fff"); rect(ctx,x0+12,y0,1,1,"#ffe58a"); rect(ctx,x0-1,y0+1,1,1,"#ffe58a"); }
+    if(lvl>=4){ rect(ctx,x0+3,y0-3,1,2,"#ffd23e"); rect(ctx,x0+5,y0-4,2,1,"#ffe58a"); rect(ctx,x0+8,y0-3,1,2,"#ffd23e"); rect(ctx,x0+4,y0-2,1,1,"#fff2b0"); rect(ctx,x0+7,y0-2,1,1,"#fff2b0"); }  /* Lv4: 작은 왕관 */
+    if(lvl>=5){ rect(ctx,x0-2,y0+2,1,1,"#63e0ff"); rect(ctx,x0+13,y0+3,1,1,"#63e0ff"); rect(ctx,x0-2,y0+7,1,1,"#ffe58a"); rect(ctx,x0+13,y0+8,1,1,"#ffe58a"); rect(ctx,x0+5,y0-5,1,1,"#fff"); rect(ctx,x0+6,y0-6,1,1,"#63e0ff"); rect(ctx,x0-1,y0+bh+1,1,1,"#fff"); rect(ctx,x0+10,y0+bh+1,1,1,"#fff"); }  /* Lv5: 무지개 오라 */
   }
 
   /* ===== high-detail character (2x resolution: outline + shading + face) ===== */
@@ -1216,6 +1232,8 @@
     // level shine
     if(lvl>=2){ pxr(ctx,cx+brx-0.5,feetY+byc-3,0.6,0.6,"#fff"); pxr(ctx,cx-brx-0.6,feetY+byc+1,0.6,0.6,"#ffe58a"); }
     if(lvl>=3){ pxr(ctx,cx-brx-1.4,feetY+byc,0.6,2.2,"#ffd23e"); pxr(ctx,cx+brx+0.8,feetY+byc,0.6,2.2,"#ffd23e"); pxr(ctx,cx-1,feetY+byc-bry-1.2,2,0.6,"#ffd23e"); }
+    if(lvl>=4){ pxr(ctx,cx-1.2,feetY+byc-bry-2.6,0.8,1,"#ffe58a"); pxr(ctx,cx-2,feetY+byc-bry-1.8,0.7,0.7,"#ffd23e"); pxr(ctx,cx+1.4,feetY+byc-bry-1.8,0.7,0.7,"#ffd23e"); }  /* Lv4 왕관 */
+    if(lvl>=5){ pxr(ctx,cx-brx-2,feetY+byc-2,0.6,0.6,"#63e0ff"); pxr(ctx,cx+brx+1.4,feetY+byc-3,0.6,0.6,"#63e0ff"); pxr(ctx,cx-brx-2.2,feetY+byc+2,0.6,0.6,"#ff9ec7"); pxr(ctx,cx+brx+1.6,feetY+byc+1,0.6,0.6,"#ff9ec7"); }  /* Lv5 무지개 오라 */
   }
 
   function drawPlatform(ctx, plat, cx, topY, broken){
@@ -1324,6 +1342,8 @@
     else if(plat.id==="candy"){top="#ffc2e0";mid="#ff7bb0";edge="#d24d8a";}
     else if(plat.id==="jelly"){top="#d3b3ff";mid="#9a6ff0";edge="#6a3fc0";}
     else if(plat.id==="gold"){top="#ffe58a";mid="#ffcf5c";edge="#c79a2a";}
+    else if(plat.id==="rainbow"){top="#ffffff";mid="#e6d5f5";edge="#b09ad0";}
+    else if(plat.id==="lava"){top="#5a2e2a";mid="#3a1c1a";edge="#1e0c0c";}
     else {top="#dcf6ff";mid="#a6e0f6";edge="#6fbde0";}
     var shp=plat.id;
     if(shp==="wood"){ rect(ctx,cx-15,cy+3,30,3,edge); rect(ctx,cx-15,cy-5,30,9,mid); rect(ctx,cx-15,cy-5,30,3,top); rect(ctx,cx-8,cy-5,1,9,edge); rect(ctx,cx-1,cy-5,1,9,edge); rect(ctx,cx+7,cy-5,1,9,edge); rect(ctx,cx-14,cy-1,28,1,edge); }
@@ -1338,6 +1358,8 @@
       rect(ctx,cx-6,cy-3,3,2,"#fff"); rect(ctx,cx+4,cy-1,2,2,"#fff"); rect(ctx,cx-1,cy-5,2,2,"#fff"); }
     else if(shp==="candy"){ rect(ctx,cx-16,cy-2,4,4,mid); rect(ctx,cx+12,cy-2,4,4,mid); rect(ctx,cx-15,cy-3,2,2,top); rect(ctx,cx+13,cy+1,2,2,top); shape3(ctx,cx,cy,11,8,edge,mid,top,Pell); rect(ctx,cx-1,cy-1,2,2,"#fff"); rect(ctx,cx-5,cy-3,2,1,"#fff"); rect(ctx,cx+3,cy+2,2,1,edge); rect(ctx,cx-4,cy+2,2,1,edge); rect(ctx,cx+2,cy-4,2,1,edge); }
     else if(shp==="lily"){ shape3(ctx,cx,cy,15,8,edge,mid,top,Pell); rect(ctx,cx-1,cy-8,2,9,"#0e2c58"); rect(ctx,cx-3,cy-9,4,3,"#ff7bb0"); rect(ctx,cx-2,cy-8,2,1,"#ffd23e"); }
+    else if(shp==="rainbow"){ shape3(ctx,cx,cy,16,8,edge,mid,top,Pell); var RC=["#ff5d73","#ff9a52","#ffd23e","#6ee7a0","#63e0ff","#b98cff"]; for(var ri=0;ri<6;ri++) rect(ctx,cx-9+ri*3,cy-3,3,2,RC[ri]); rect(ctx,cx-3,cy,2,1,"#ffffff"); }
+    else if(shp==="lava"){ shape3(ctx,cx,cy,16,8,edge,mid,top,Pell); rect(ctx,cx-6,cy-1,4,1,"#ff5d1a"); rect(ctx,cx+2,cy+1,4,1,"#ff8c1a"); rect(ctx,cx-1,cy-3,2,1,"#ffd23e"); rect(ctx,cx+5,cy-2,2,1,"#ff5d1a"); rect(ctx,cx-8,cy+1,2,1,"#ff8c1a"); }
     else { shape3(ctx,cx,cy,16,8,edge,mid,top,Pell); rect(ctx,cx-7,cy,2,2,edge); rect(ctx,cx+4,cy-2,2,2,edge); rect(ctx,cx+1,cy+2,2,2,mid); }
     if(broken){ ctx.globalAlpha=a; rect(ctx,cx-1,cy-7,2,14,"#12152a"); rect(ctx,cx-7,cy-1,5,2,"#12152a"); rect(ctx,cx+3,cy+1,5,2,"#12152a"); }
     ctx.globalAlpha=1;
@@ -1392,7 +1414,7 @@
     var S=activeSet(); if(S){ s.luck+=S.luck||0; s.bounty+=S.bounty||0; s.revive+=S.revive||0; }
     var u=userStats(); s.luck+=u.luck; s.bounty+=u.bounty; s.revive+=u.revive;
     var lb=(charLevel(c.id)-1)*2; if(lb>0){ s.luck+=lb; s.bounty+=lb; s.revive+=lb; } return s; }
-  function gainFor(f){ return Math.max(1,Math.round(f*(1+curStats.bounty/100)*0.15)); }
+  function gainFor(f){ return Math.max(1,Math.round(f*(1+curStats.bounty/100)*0.075)); }  /* 누적상금 반토막(그만하기 없앤 대신 100% 수령) */
   function armRound(){ var r=mode==="daily"?dailyRng():Math.random(); currentSafe=r<0.5?"L":"R"; }
 
   function flavor(n){
@@ -1406,10 +1428,9 @@
   }
   function showCenterFx(txt, big){ var el=$("centerFx"); el.textContent=txt; el.classList.remove("show"); el.classList.toggle("big", !!big); void el.offsetWidth; el.classList.add("show"); clearTimeout(showCenterFx._t); showCenterFx._t=setTimeout(function(){el.classList.remove("show");}, big?750:1300); }
   function updateEcon(){ var endless=(mode==="endless");
-    $("stPotCell").style.display=endless?"":"none"; $("cashoutBtn").style.display=endless?"":"none";
+    $("stPotCell").style.display=endless?"":"none"; $("cashoutBtn").style.display="none";  /* 그만하기 버튼 제거 — 끝까지 도전 */
     if(!endless) return;
-    $("potVal").textContent="🪙"+runPot;
-    $("cashoutBtn").disabled=floor<1||busy||!playing; $("cashoutBtn").textContent=floor<1?"🏦 여기서 그만하기":"🏦 그만하기 · 🪙"+runPot+" 받기"; }
+    $("potVal").textContent="🪙"+runPot; }
   function updateProb(){ var endless=(mode==="endless");
     var luck=endless?(curStats.luck+(charmActive?CHARM_LUCK:0)+(boosterArmed?BOOST_LUCK:0)+(blessN>0?25:0)):0; var lk=(luck>0?'50%+'+luck+'%':'50%');
     var potpart=endless?(' · 성공 시 <b>🪙+'+gainFor(floor+1)+'</b>'):'';
@@ -1442,7 +1463,7 @@
     runUsedCharm=false; runUsedHoney=false; runUsedTube=false; runUsedFeather=false; runUsedBooster=false;
     runProb=1; boosterArmed=false; doubleArmed=false; sureArmed=false; blessN=0; saveCount=0;
     $("floor").textContent="0";
-    if(mode==="daily"){ ensureDaily(); dailyRng=rng(dayKey()+"|attempt"+st.daily.used); curStats={luck:0,bounty:0,revive:0}; charmActive=honeyActive=shieldReady=featherActive=false; $("rightLab").textContent="오늘의 도전"; $("rightVal").textContent=(st.daily.used+1)+"/"+st.daily.cap; }
+    if(mode==="daily"){ ensureDaily(); dailyRng=rng(dayKey()+"|attempt"+st.daily.used); curStats={luck:0,bounty:0,revive:0}; charmActive=honeyActive=shieldReady=featherActive=false; $("rightLab").textContent="오늘의 도전"; $("rightVal").textContent="최고 "+(st.daily.best||0); }
     else {
       curStats=computeStats();
       var buyRun=function(id){ var it=itemById(id); if(!st[it.use])return false; if(st.coins<it.price){ st[it.use]=false; return false; } st.coins-=it.price; logCoin(-it.price,it.ic+" "+it.name); return true; };
@@ -1527,7 +1548,19 @@
     {id:"arrow",   fn:arrowGame,   emoji:"⬅➡", name:"방향 연타",   how:"화면에 뜬 화살표 방향을 빠르게 여러 번 탭!"},
     {id:"balance", fn:balanceGame, emoji:"⚖️", name:"균형 잡기",   how:"치우친 반대쪽을 탭해 공을 가운데 초록칸에 유지·충전!"},
     {id:"color",   fn:colorGame,   emoji:"🚦",  name:"신호등",      how:"초록일 때만 3번 탭! 빨강·대기 중 누르면 실패."},
-    {id:"whack",   fn:whackGame,   emoji:"🦫",  name:"두더지 잡기", how:"나타나는 목표를 사라지기 전에 정확히 콕!"}
+    {id:"whack",   fn:whackGame,   emoji:"🦫",  name:"두더지 잡기", how:"초록만 콕! 💣 폭탄 누르면 실패."},
+    {id:"oddeven", fn:oddevenGame, emoji:"🔮",  name:"홀짝",        how:"홀? 짝? 감으로 연속 맞히기 (순수 운)."},
+    {id:"rps",     fn:rpsGame,     emoji:"✊",  name:"가위바위보",  how:"컴퓨터를 이겨라! 지면 실패, 비기면 다시."},
+    {id:"math",    fn:mathGame,    emoji:"🧮",  name:"사칙연산",    how:"사칙연산 문제의 정답을 골라요."},
+    {id:"doors",   fn:doorsGame,   emoji:"🚪",  name:"운명의 문",   how:"3개 중 안전한 문 고르기 (함정 회피)."},
+    {id:"dice",    fn:diceGame,    emoji:"🎲",  name:"주사위",      how:"두 주사위 합이 목표 이상 나오게! (운)."},
+    {id:"hilo",    fn:higherlowerGame, emoji:"🔢", name:"업다운",   how:"다음 숫자가 위/아래일지 맞히기."},
+    {id:"slot",    fn:slotGame,    emoji:"🎰",  name:"슬롯",        how:"릴을 멈춰 같은 그림 2개 이상! (운)."},
+    {id:"simon",   fn:simonGame,   emoji:"🎨",  name:"색 순서 기억",how:"깜빡이는 색 순서를 외워서 따라 눌러요."},
+    {id:"seq",     fn:seqGame,     emoji:"🔢",  name:"순서 탭",     how:"1부터 순서대로 빠르게 탭! 순서 틀리면 실패."},
+    {id:"count",   fn:countGame,   emoji:"👀",  name:"개수 세기",   how:"잠깐 보인 점의 개수를 맞혀요(관찰력)."},
+    {id:"dodge",   fn:dodgeGame,   emoji:"⬇",  name:"낙하물 피하기",how:"좌/우로 움직여 떨어지는 걸 피해 버텨요."},
+    {id:"findone", fn:findoneGame, emoji:"🔍",  name:"다른 것 찾기",how:"색이 살짝 다른 하나를 찾아 탭!"}
   ];
   var MG_CFG={weights:{},diffBase:0,diffStep:1};  // 서버 config로 덮어씀(get_cfg 'minigames')
   window.PJ_SETMGCFG=function(c){ if(c&&typeof c==="object"){ if(c.weights&&typeof c.weights==="object")MG_CFG.weights=c.weights; if(typeof c.diffBase==="number")MG_CFG.diffBase=c.diffBase; if(typeof c.diffStep==="number")MG_CFG.diffStep=c.diffStep; } };
@@ -1637,15 +1670,15 @@
   function balanceGame(d, win, lose){
     var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
     $("saveInst").textContent="⚖️ 공을 가운데 초록칸에 유지!"; $("saveHint").textContent="치우친 쪽 반대 화면을 탭해 되돌려요 · 유지하면 위 게이지 충전";
-    var p=50, v=0, prog=0, need=100, done=false, t0=performance.now(), limit=8500;
-    var wobble=0.032+d*0.016, push=1.9, zone=Math.max(16,26-d*1.4), instab=0.0015*(1+d*0.2);
-    var windT=t0+600+Math.random()*700, windDir=1;
+    var p=50, v=0, prog=0, need=100, done=false, t0=performance.now(), limit=10000;  /* 쉽게: 시간 여유 */
+    var wobble=0.018+d*0.009, push=2.3, zone=Math.max(24,34-d*1.1), instab=0.0009*(1+d*0.15);  /* 쉽게: 흔들림↓·존↑·복원력↑ */
+    var windT=t0+700+Math.random()*800, windDir=1;
     saveRun=true;
     function frame(ts){ if(!saveRun)return;
-      if(ts>windT){ windDir=(Math.random()<0.5?-1:1); windT=ts+550+Math.random()*800; }
-      v+=windDir*wobble*(0.6+Math.random()*0.8); v+=(p-50)*instab; v*=0.965; p+=v;
+      if(ts>windT){ windDir=(Math.random()<0.5?-1:1); windT=ts+650+Math.random()*900; }
+      v+=windDir*wobble*(0.6+Math.random()*0.8); v+=(p-50)*instab; v*=0.955; p+=v;
       if(p<=2||p>=98){ done=true; lose(); return; }
-      var inZone=Math.abs(p-50)<=zone; if(inZone){ prog+=1.5; } else { prog-=0.3; if(prog<0)prog=0; }
+      var inZone=Math.abs(p-50)<=zone; if(inZone){ prog+=2.1; } else { prog-=0.2; if(prog<0)prog=0; }  /* 쉽게: 충전↑·감소↓ */
       if(prog>=need){ done=true; win(); return; }
       x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
       var m=18, trackY=H/2+6, innerW=W-2*m;
@@ -1682,27 +1715,175 @@
   }
   function whackGame(d, win, lose){
     var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
-    $("saveInst").textContent="🎯 나타나는 목표를 콕!"; $("saveHint").textContent="놓치면 실패! 사라지기 전에 정확히 콕";
-    var need=3+Math.floor(d/2), got=0, done=false, t0=performance.now(), limit=12000;
-    var R=Math.max(22,34-d*2), tx=W/2, ty=H/2, life=Math.max(720,1120-d*120), bornT=t0, alive=false;
+    $("saveInst").textContent="🎯 초록만 콕! 💣 폭탄은 누르지 마!"; $("saveHint").textContent="폭탄 누르면 실패 · 초록만 빠르게";
+    var need=3+Math.floor(d/2), got=0, done=false, t0=performance.now(), limit=13000;
+    var R=Math.max(22,34-d*2), tx=W/2, ty=H/2, life=Math.max(760,1160-d*110), bornT=t0, alive=false, bad=false, badP=Math.min(0.45,0.28+d*0.03);
     saveRun=true;
-    function spawn(ts){ tx=R+Math.random()*(W-2*R); ty=R+10+Math.random()*(H-2*R-28); bornT=ts; alive=true; vibrate(10); }
+    function spawn(ts){ tx=R+Math.random()*(W-2*R); ty=R+10+Math.random()*(H-2*R-28); bornT=ts; alive=true; bad=(Math.random()<badP); vibrate(8); }
     function frame(ts){ if(!saveRun)return;
-      if(!alive && ts-t0>300 && ts-bornT>240) spawn(ts);
-      if(alive && ts-bornT>life){ done=true; lose(); return; }
+      if(!alive && ts-t0>300 && ts-bornT>220) spawn(ts);
+      if(alive && ts-bornT>life){ alive=false; bornT=ts; }  /* 시간초과=그냥 사라짐(감점 없음) */
       x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
       if(alive){ var k=Math.max(0.2,1-(ts-bornT)/life);
-        x.fillStyle="#2f8a58"; x.beginPath(); x.arc(tx,ty,R,0,Math.PI*2); x.fill();
-        x.strokeStyle="#6ee7a0"; x.lineWidth=3; x.beginPath(); x.arc(tx,ty,R*k*0.62+4,0,Math.PI*2); x.stroke();
-        x.fillStyle="#eafff2"; x.font="bold 16px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText("◎",tx,ty); }
+        if(bad){ x.fillStyle="#7a2230"; x.beginPath(); x.arc(tx,ty,R,0,Math.PI*2); x.fill(); x.fillStyle="#fff"; x.font="bold 20px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText("💣",tx,ty); }
+        else { x.fillStyle="#2f8a58"; x.beginPath(); x.arc(tx,ty,R,0,Math.PI*2); x.fill(); x.strokeStyle="#6ee7a0"; x.lineWidth=3; x.beginPath(); x.arc(tx,ty,R*k*0.62+4,0,Math.PI*2); x.stroke(); x.fillStyle="#eafff2"; x.font="bold 16px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText("◎",tx,ty); } }
       x.fillStyle="#ffd23e"; x.font="bold 15px 'Apple SD Gothic Neo',sans-serif"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(got+" / "+need, W/2, 18);
       saveTimer(x,W,H,ts,t0,limit);
       if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
     $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun||!alive)return;
       var rc=cv.getBoundingClientRect(); var px=(ev.clientX-rc.left)*(W/rc.width), py=(ev.clientY-rc.top)*(H/rc.height);
-      if(Math.sqrt((px-tx)*(px-tx)+(py-ty)*(py-ty))<=R+7){ got++; vibrate([12,20,12]); sfx("coin"); alive=false; bornT=performance.now()-120; if(got>=need){ done=true; win(); return; } } };
+      if(Math.sqrt((px-tx)*(px-tx)+(py-ty)*(py-ty))<=R+7){ if(bad){ done=true; vibrate([40,30,80]); lose(); return; } got++; vibrate([12,20,12]); sfx("coin"); alive=false; bornT=performance.now()-100; if(got>=need){ done=true; win(); return; } } };
     saveRAF=requestAnimationFrame(frame);
   }
+
+  function mgXY(cv,ev){ var rc=cv.getBoundingClientRect(); return { px:(ev.clientX-rc.left)*(cv.width/rc.width), py:(ev.clientY-rc.top)*(cv.height/rc.height) }; }
+  function oddevenGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🔮 홀? 짝? 감으로 맞혀!"; $("saveHint").textContent="맞히면 진행 · 틀리면 실패";
+    var need=2+Math.floor(d/2), got=0, done=false, t0=performance.now(), limit=Math.max(4000,7000-d*300);
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#2e2456"; x.fillRect(0,0,W/2-1,H); x.fillStyle="#3a2e5e"; x.fillRect(W/2+1,0,W/2,H);
+      x.fillStyle="#ece7ff"; x.textAlign="center"; x.textBaseline="middle"; x.font="bold 34px 'Apple SD Gothic Neo',sans-serif"; x.fillText("홀", W/4, H/2-6); x.fillText("짝", W*3/4, H/2-6);
+      x.font="bold 14px 'Apple SD Gothic Neo',sans-serif"; x.fillStyle="#ffd23e"; x.fillText(got+" / "+need, W/2, H-14); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); var pick=(p.px<W/2)?1:0, res=Math.floor(Math.random()*1000)%2;
+      if(pick===res){ got++; sfx("coin"); vibrate([12,20,12]); if(got>=need){ done=true; win(); return; } } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function rpsGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="✊✋✌ 이겨라! 가위바위보"; $("saveHint").textContent="이기면 진행 · 지면 실패(비기면 다시)";
+    var need=2+Math.floor(d/2), got=0, done=false, t0=performance.now(), limit=Math.max(5000,9000-d*300), opts=["✊","✋","✌"];
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      for(var i=0;i<3;i++){ x.fillStyle=i%2?"#2e2456":"#33285e"; x.fillRect(i*W/3,0,W/3-1,H-22); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="34px sans-serif"; x.fillText(opts[i],(i+0.5)*W/3,H/2-8); }
+      x.fillStyle="#ffd23e"; x.font="bold 14px 'Apple SD Gothic Neo',sans-serif"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(got+" / "+need, W/2, H-6); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); var me=Math.min(2,Math.floor(p.px/(W/3))), cpu=Math.floor(Math.random()*3);
+      if(me===cpu){ vibrate(8); return; } var wins=(me===0&&cpu===2)||(me===1&&cpu===0)||(me===2&&cpu===1);
+      if(wins){ got++; sfx("coin"); vibrate([12,20,12]); if(got>=need){ done=true; win(); return; } } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function mathGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🧮 정답을 골라!"; $("saveHint").textContent="사칙연산 · 틀리면 실패";
+    var done=false, t0=performance.now(), limit=Math.max(4500,8000-d*400), ans=0, opts=[], q="";
+    (function gen(){ var a=2+Math.floor(Math.random()*(7+d*2)), b=2+Math.floor(Math.random()*(7+d*2)), ops=["+","−","×"], op=ops[Math.floor(Math.random()*(d>1?3:2))];
+      if(op==="+")ans=a+b; else if(op==="−"){ if(b>a){var t=a;a=b;b=t;} ans=a-b; } else ans=a*b; q=a+" "+op+" "+b;
+      var set={}; set[ans]=1; opts=[ans]; var guard=0; while(opts.length<4&&guard++<40){ var w=ans+(Math.floor(Math.random()*9)-4)*(op==="×"?Math.max(1,a):1); if(w!==ans&&w>=0&&!set[w]){ set[w]=1; opts.push(w); } } while(opts.length<4)opts.push(ans+opts.length); opts.sort(function(){return Math.random()-0.5;}); })();
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="bold 25px 'Apple SD Gothic Neo',sans-serif"; x.fillText(q+" = ?", W/2, H*0.22);
+      for(var i=0;i<4;i++){ var bx=(i%2)*(W/2), by=H*0.40+Math.floor(i/2)*(H*0.29); x.fillStyle=i%2?"#2e2456":"#33285e"; x.fillRect(bx+3,by,W/2-6,H*0.26); x.fillStyle="#ffd23e"; x.font="bold 22px 'Apple SD Gothic Neo',sans-serif"; x.fillText(opts[i], bx+W/4, by+H*0.13); }
+      saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); if(p.py<H*0.40)return; var col=(p.px<W/2)?0:1, row=(p.py<H*0.40+H*0.29)?0:1, idx=row*2+col;
+      if(opts[idx]===ans){ done=true; sfx("coin"); vibrate([12,20,12]); win(); } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function doorsGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🚪 안전한 문을 골라!"; $("saveHint").textContent="운명의 문 · 함정을 피해요";
+    var need=2+Math.floor(d/2), got=0, safe=Math.floor(Math.random()*3), done=false, t0=performance.now(), limit=Math.max(5000,9000-d*300);
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      for(var i=0;i<3;i++){ x.fillStyle="#5a4a2e"; x.fillRect(i*W/3+8,14,W/3-16,H-46); x.fillStyle="#8a6a3a"; x.fillRect(i*W/3+8,14,W/3-16,6); x.fillStyle="#eee"; x.textAlign="center"; x.textBaseline="middle"; x.font="28px sans-serif"; x.fillText("🚪",(i+0.5)*W/3,H/2-4); }
+      x.fillStyle="#ffd23e"; x.font="bold 14px 'Apple SD Gothic Neo',sans-serif"; x.fillText(got+" / "+need, W/2, H-8); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); var pick=Math.min(2,Math.floor(p.px/(W/3)));
+      if(pick===safe){ got++; sfx("coin"); vibrate([12,20,12]); safe=Math.floor(Math.random()*3); if(got>=need){ done=true; win(); return; } } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function diceGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    var target=8+d; $("saveInst").textContent="🎲 두 주사위 합 "+target+" 이상!"; $("saveHint").textContent="탭해서 굴려요 · 3번 기회";
+    var tries=3, done=false, t0=performance.now(), limit=11000, rolling=false, da=1, db=1, shown=false, faces=["","⚀","⚁","⚂","⚃","⚄","⚅"];
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="48px sans-serif"; x.fillText(faces[da],W*0.36,H/2-8); x.fillText(faces[db],W*0.64,H/2-8);
+      x.fillStyle="#ffd23e"; x.font="bold 14px 'Apple SD Gothic Neo',sans-serif"; x.fillText(shown?("합 "+(da+db)+" · 남은 "+tries):("탭해서 굴려요 · 남은 "+tries), W/2, H-12); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun||rolling)return; rolling=true; shown=false; var n=0, iv=setInterval(function(){ da=1+Math.floor(Math.random()*6); db=1+Math.floor(Math.random()*6); if(++n>8){ clearInterval(iv); rolling=false; shown=true; if(da+db>=target){ done=true; sfx("coin"); vibrate([12,20,60]); win(); } else { tries--; if(tries<=0){ done=true; vibrate([40,30,80]); lose(); } } } }, 60); };
+    saveRAF=requestAnimationFrame(frame); }
+  function higherlowerGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🔢 다음 숫자가 위? 아래?"; $("saveHint").textContent="1~9 · 맞히면 진행";
+    var need=2+Math.floor(d/2), got=0, cur=1+Math.floor(Math.random()*9), done=false, t0=performance.now(), limit=Math.max(5000,9000-d*300);
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H); x.fillStyle="#ffd23e"; x.textAlign="center"; x.textBaseline="middle"; x.font="bold 50px 'Apple SD Gothic Neo',sans-serif"; x.fillText(cur, W/2, H*0.33);
+      x.fillStyle="#2f8a58"; x.fillRect(6,H*0.58,W/2-9,H*0.3); x.fillStyle="#7a3050"; x.fillRect(W/2+3,H*0.58,W/2-9,H*0.3); x.fillStyle="#fff"; x.font="bold 17px 'Apple SD Gothic Neo',sans-serif"; x.fillText("▲ 위", W/4, H*0.735); x.fillText("▼ 아래", W*3/4, H*0.735);
+      x.fillStyle="#ffd23e"; x.font="bold 13px 'Apple SD Gothic Neo',sans-serif"; x.fillText(got+" / "+need, W/2, H*0.5); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); if(p.py<H*0.55)return; var up=(p.px<W/2), nx=1+Math.floor(Math.random()*9); while(nx===cur)nx=1+Math.floor(Math.random()*9); var ok=up?(nx>cur):(nx<cur); cur=nx;
+      if(ok){ got++; sfx("coin"); vibrate([12,20,12]); if(got>=need){ done=true; win(); return; } } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function slotGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🎰 같은 그림 2개 이상!"; $("saveHint").textContent="탭해서 하나씩 멈춰요 · 3번 기회";
+    var sym=["🍒","🍋","🔔","⭐","🍀"], reels=[0,0,0], spin=[true,true,true], tries=3, done=false, t0=performance.now(), limit=12000;
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      for(var i=0;i<3;i++){ if(spin[i])reels[i]=(reels[i]+1)%sym.length; x.fillStyle="#2e2456"; x.fillRect(i*W/3+6,20,W/3-12,H-52); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="32px sans-serif"; x.fillText(sym[reels[i]],(i+0.5)*W/3,H/2-6); }
+      x.fillStyle="#ffd23e"; x.font="bold 13px 'Apple SD Gothic Neo',sans-serif"; x.fillText("남은 "+tries, W/2, H-8); saveTimer(x,W,H,ts,t0,limit);
+      if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var idx=spin.indexOf(true); if(idx<0)return; spin[idx]=false; reels[idx]=Math.floor(Math.random()*sym.length); vibrate(10);
+      if(spin.indexOf(true)<0){ var cnt={}, max=0; reels.forEach(function(r){ cnt[r]=(cnt[r]||0)+1; if(cnt[r]>max)max=cnt[r]; }); setTimeout(function(){ if(max>=2){ done=true; sfx("coin"); vibrate([12,20,60]); win(); } else { tries--; if(tries<=0){ done=true; vibrate([40,30,80]); lose(); } else { spin=[true,true,true]; } } }, 260); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function simonGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🎨 순서를 외워 따라 눌러!"; $("saveHint").textContent="깜빡이는 순서 기억하기";
+    var cols=["#ff6b81","#63e0ff","#6ee7a0","#ffd23e"], len=3+Math.floor(d/2), seq=[], input=0, phase="show", showT=0, lit=-1, done=false, t0=performance.now(), limit=Math.max(6000,10000+len*500);
+    for(var i=0;i<len;i++) seq.push(Math.floor(Math.random()*4));
+    function cellIdx(px,py){ return (py<H/2?0:2)+(px<W/2?0:1); }
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; if(!showT)showT=ts;
+      if(phase==="show"){ var el=ts-showT, step=Math.floor(el/640); if(step<len){ lit=((el%640)<420)?seq[step]:-1; } else { phase="input"; lit=-1; } }
+      x.clearRect(0,0,W,H);
+      for(var i=0;i<4;i++){ var cx=(i%2)*(W/2), cy=Math.floor(i/2)*(H/2); x.fillStyle=(lit===i)?cols[i]:(cols[i]+"44"); x.fillRect(cx+3,cy+3,W/2-6,H/2-6); }
+      x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.font="bold 13px 'Apple SD Gothic Neo',sans-serif"; x.fillText(phase==="show"?"외우세요…":("따라 누르기 "+input+"/"+len), W/2, H-6);
+      if(phase==="input"){ saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; lose(); return; } }
+      saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun||phase!=="input")return; var p=mgXY(cv,ev), c=cellIdx(p.px,p.py); lit=c; setTimeout(function(){ if(!done)lit=-1; },160);
+      if(c===seq[input]){ input++; sfx("coin"); vibrate(10); if(input>=len){ done=true; vibrate([12,20,60]); win(); return; } } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+
+  function seqGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🔢 1부터 순서대로 탭!"; $("saveHint").textContent="순서 틀리면 실패";
+    var n=4+d, nums=[], next=1, done=false, t0=performance.now(), limit=Math.max(5000,9000-d*200);
+    for(var i=0;i<n;i++) nums.push({v:i+1, x:20+Math.random()*(W-40), y:26+Math.random()*(H-56)});
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      nums.forEach(function(c){ if(c.v<next)return; x.fillStyle=c.v===next?"#2f8a58":"#33285e"; x.beginPath(); x.arc(c.x,c.y,13,0,7); x.fill(); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="bold 15px 'Apple SD Gothic Neo',sans-serif"; x.fillText(c.v,c.x,c.y); });
+      saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev);
+      for(var i=0;i<nums.length;i++){ var c=nums[i]; if(c.v<next)continue; if((p.px-c.x)*(p.px-c.x)+(p.py-c.y)*(p.py-c.y)<=240){ if(c.v===next){ next++; sfx("coin"); vibrate(10); if(next>n){ done=true; vibrate([12,20,60]); win(); return; } } else { done=true; vibrate([40,30,80]); lose(); return; } return; } } };
+    saveRAF=requestAnimationFrame(frame); }
+  function countGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="👀 개수를 세어라!"; $("saveHint").textContent="잠깐 보여줘요";
+    var m=5+Math.floor(Math.random()*(6+d*2)), dots=[], showMs=Math.max(700,1500-d*130), phase="show", t0=0, done=false, opts=[], limit=8000, showStart=0;
+    for(var i=0;i<m;i++)dots.push({x:16+Math.random()*(W-32), y:22+Math.random()*(H-64)});
+    var set={}; set[m]=1; opts=[m]; var g=0; while(opts.length<4&&g++<40){ var w=m+(Math.floor(Math.random()*7)-3); if(w>0&&!set[w]){set[w]=1;opts.push(w);} } while(opts.length<4)opts.push(m+opts.length); opts.sort(function(){return Math.random()-0.5;});
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; if(!showStart)showStart=ts; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      if(phase==="show"){ if(ts-showStart>showMs){ phase="ask"; t0=performance.now(); } else { dots.forEach(function(dt){ x.fillStyle="#ffd23e"; x.beginPath(); x.arc(dt.x,dt.y,6,0,7); x.fill(); }); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.font="bold 13px 'Apple SD Gothic Neo',sans-serif"; x.fillText("세는 중…", W/2, H-8); } }
+      else { x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle"; x.font="bold 19px 'Apple SD Gothic Neo',sans-serif"; x.fillText("몇 개였을까?", W/2, H*0.18);
+        for(var i=0;i<4;i++){ var bx=(i%2)*(W/2), by=H*0.34+Math.floor(i/2)*(H*0.30); x.fillStyle=i%2?"#2e2456":"#33285e"; x.fillRect(bx+3,by,W/2-6,H*0.27); x.fillStyle="#ffd23e"; x.font="bold 22px 'Apple SD Gothic Neo',sans-serif"; x.fillText(opts[i], bx+W/4, by+H*0.135); }
+        saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; lose(); return; } }
+      saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun||phase!=="ask")return; var p=mgXY(cv,ev); if(p.py<H*0.34)return; var col=(p.px<W/2)?0:1, row=(p.py<H*0.34+H*0.30)?0:1, idx=row*2+col; if(opts[idx]===m){ done=true; sfx("coin"); vibrate([12,20,12]); win(); } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
+  function dodgeGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="⬅➡ 떨어지는 걸 피해!"; $("saveHint").textContent="좌/우 화면을 누른 채 이동 · 버티기";
+    var px=W/2, pw=18, done=false, t0=performance.now(), limit=Math.max(5500,8000-d*300), blocks=[], spawnT=0, dir=0, speed=1.6+d*0.4, spawnEvery=Math.max(430,720-d*45);
+    saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      px+=dir*3.4; if(px<pw/2)px=pw/2; if(px>W-pw/2)px=W-pw/2;
+      if(ts-spawnT>spawnEvery){ spawnT=ts; blocks.push({x:12+Math.random()*(W-24), y:-8}); }
+      for(var i=blocks.length-1;i>=0;i--){ var b=blocks[i]; b.y+=speed; x.fillStyle="#ff5d73"; x.fillRect(b.x-6,b.y-6,12,12); if(b.y>H-16 && b.y<H-2 && Math.abs(b.x-px)<pw/2+6){ done=true; vibrate([40,30,80]); lose(); return; } if(b.y>H+10)blocks.splice(i,1); }
+      x.fillStyle="#6ee7a0"; x.fillRect(px-pw/2,H-14,pw,8);
+      saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; sfx("coin"); vibrate([12,20,60]); win(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); dir=(p.px<W/2)?-1:1; };
+    $("saveOv").onpointerup=function(ev){ dir=0; };
+    saveRAF=requestAnimationFrame(frame); }
+  function findoneGame(d, win, lose){ var cv=$("saveCanvas"), x=cv.getContext("2d"), W=cv.width, H=cv.height;
+    $("saveInst").textContent="🔍 색이 다른 하나를 찾아!"; $("saveHint").textContent="틀리면 실패";
+    var need=2+Math.floor(d/2), got=0, done=false, t0=performance.now(), limit=Math.max(5000,9000-d*250), cols=4+Math.min(2,d), rows=4, odd=0, base="#63e0ff", diff="#4ec8e8";
+    function reroll(){ var hues=[["#63e0ff","#54cbe6"],["#6ee7a0","#5bd090"],["#ffd23e","#efc22c"],["#ff8fae","#f27b9c"],["#b98cff","#a87af0"]]; var pr=hues[Math.floor(Math.random()*hues.length)]; base=pr[0]; diff=pr[1]; odd=Math.floor(Math.random()*(cols*rows)); }
+    reroll(); saveRun=true;
+    function frame(ts){ if(!saveRun)return; x.clearRect(0,0,W,H); x.fillStyle="#241f3e"; x.fillRect(0,0,W,H);
+      var gw=W/cols, gh=(H-22)/rows;
+      for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){ var idx=r*cols+c; x.fillStyle=(idx===odd)?diff:base; x.fillRect(c*gw+2,r*gh+2,gw-4,gh-4); }
+      x.fillStyle="#ffd23e"; x.font="bold 13px 'Apple SD Gothic Neo',sans-serif"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(got+" / "+need, W/2, H-6);
+      saveTimer(x,W,H,ts,t0,limit); if(ts-t0>limit){ done=true; lose(); return; } saveRAF=requestAnimationFrame(frame); }
+    $("saveOv").onpointerdown=function(ev){ if(ev.cancelable)ev.preventDefault(); if(done||!saveRun)return; var p=mgXY(cv,ev); var gw=W/cols, gh=(H-22)/rows; if(p.py>H-22)return; var c=Math.floor(p.px/gw), r=Math.floor(p.py/gh), idx=r*cols+c;
+      if(idx===odd){ got++; sfx("coin"); vibrate([12,20,12]); if(got>=need){ done=true; win(); return; } reroll(); } else { done=true; vibrate([40,30,80]); lose(); } };
+    saveRAF=requestAnimationFrame(frame); }
 
   function cashOut(){ if(mode!=="endless"||!playing||busy||floor<1)return; busy=true; finishEndless("cashout"); }
   function touchStreak(){ var t=dayKey(); if(st.lastDay===t)return; st.streak=(st.lastDay===prevDayKey())?st.streak+1:1; st.lastDay=t; }
@@ -1710,10 +1891,10 @@
     if(!st.secretSeen) st.secretSeen=[];
     secretChars().forEach(function(c){ if(st.totalDist>=c.unlock && st.secretSeen.indexOf(c.id)<0){ st.secretSeen.push(c.id); save(); fireConfetti(); vibrate([25,45,90]); toast("🔓 시크릿 펫 해금! 뽑기에서 노려봐요 ✨"); } });
     checkPassiveEggs(); }
-  var EVO = [ {exp:30, cost:200}, {exp:80, cost:700} ];
+  var EVO = [ {exp:30, cost:200}, {exp:80, cost:700}, {exp:160, cost:1800}, {exp:280, cost:4200} ];
   function charLevel(id){ return st.charLevels[id]||1; }
   function charExp(id){ return st.charExp[id]||0; }
-  function stars(n){ return "★★★".slice(0,n)+"☆☆☆".slice(0,3-n); }
+  function stars(n){ return "★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n); }
   function expAdd(id,d){ if(d<=0)return; st.charExp[id]=(st.charExp[id]||0)+d; }
   function itemsUsed(){ var a=[]; if(runUsedCharm)a.push("charm"); if(runUsedHoney)a.push("honey"); if(runUsedTube)a.push("tube"); if(runUsedBooster)a.push("boost"); if(runUsedFeather)a.push("feather"); return a; }
 
@@ -1754,7 +1935,7 @@
     var k=normName(st.name),ent=null; for(var i=0;i<st.dailyBoard.entries.length;i++) if(normName(st.dailyBoard.entries[i].name)===k){ent=st.dailyBoard.entries[i];break;}
     if(ent){ if(st.daily.best>ent.floor)ent.floor=st.daily.best; ent.char=st.character; ent.lvl=charLevel(st.character); ent.plat=st.platform; ent.acc=st.accessory; } else st.dailyBoard.entries.push({name:st.name,floor:st.daily.best,char:st.character,lvl:charLevel(st.character),plat:st.platform,acc:st.accessory});
     if(!st.dailyRecord||st.daily.best>(st.dailyRecord.floor||0)) st.dailyRecord={floor:st.daily.best,char:st.character,plat:st.platform,acc:st.accessory,lvl:charLevel(st.character)};
-    var done=st.daily.used>=st.daily.cap, rank=0;
+    var done=false, rank=0;  /* 오늘의 도전 무제한 */
     var sorted=st.dailyBoard.entries.slice().sort(function(a,b){return b.floor-a.floor;}); for(var j=0;j<sorted.length;j++) if(normName(sorted[j].name)===k){rank=j+1;break;}
     lastResult={mode:"daily",floor:st.daily.best,name:st.name,fortune:(rv?rv.text:(st.daily.reveals[0]?st.daily.reveals[0].text:""))};
     save(); refreshTop(); if(floorNow>prevBest&&floorNow>0) fireConfetti();
@@ -1764,18 +1945,16 @@
   function dailyResultCommon(){ $("resCap").textContent="칸을 건넜어요"; $("resProb").textContent=""; document.querySelector("#resultOv .board").hidden=true; $("resShareWrap").hidden=true; }
   function addDailyAdBtn(btns){ btns.style.flexWrap="wrap"; var b=document.createElement("button"); b.className="btn"; b.style.cssText="flex:1 1 100%"; b.textContent="📺 광고 보고 +3판 도전 ("+st.adCount+"/"+AD_CAP+")"; b.onclick=function(){ ensureAd(); if(st.adCount>=AD_CAP){ toast("오늘 리워드 광고를 다 봤어요"); return; } st.adCount++; st.daily.cap+=3; save(); refreshTop(); toast("📺 오늘의 도전 +3판! (실제 광고는 출시 후 연동)"); hide("resultOv"); startRun("daily"); }; btns.appendChild(b); }
   function showDailyAttempt(rv,floorNow,base,done,rank){
-    $("resFloor").textContent=floorNow; $("resKick").textContent="도전 "+st.daily.used+"/"+st.daily.cap+" 완료";
+    $("resFloor").textContent=floorNow; $("resKick").textContent="오늘의 도전";
     var note=$("resNote"),cl=$("resCoins");
-    if(done){ note.textContent=st.daily.cap+"판 최고 "+st.daily.best+"칸 · 현재 "+rank+"위"; note.className=rank<=10?"rnote rec":"rnote"; }
-    else { note.textContent="아직 "+(st.daily.cap-st.daily.used)+"번의 기회가 남았어요!"; note.className="rnote"; }
-    cl.hidden=false; cl.innerHTML='🪙+'+base+' <span class="m">기본</span>'+(done?'<br><span class="m" style="font-size:11px">TOP3 보너스는 <b style="color:var(--gold2)">자정에 확정</b> → 내일 수령</span>':'');
-    var fo=$("resFortune"); if(rv){ fo.hidden=false; fo.innerHTML=fortuneHTML(rv); } else { fo.hidden=true; }  // 광고 재play엔 운세카드 없음
+    note.textContent="최고 "+st.daily.best+"칸 · 현재 "+rank+"위 · 무제한 도전!"; note.className=rank<=10?"rnote rec":"rnote";
+    cl.hidden=false; cl.innerHTML='🪙+'+base+' <span class="m">기본</span><br><span class="m" style="font-size:11px">TOP3 보너스는 <b style="color:var(--gold2)">자정에 확정</b> → 내일 수령</span>';
+    var fo=$("resFortune"); if(rv){ fo.hidden=false; fo.innerHTML=fortuneHTML(rv); } else { fo.hidden=true; }  // 첫 3판만 운세카드
     dailyResultCommon();
     var btns=$("resBtns"); btns.innerHTML=""; btns.style.flexWrap="";
-    if(!done){ addBtn(btns,"다음 도전 ▶","btn",function(){ hide("resultOv"); startRun("daily"); }); }
-    else { addBtn(btns,"공유","btn",function(){shareResult(st.daily.best,st.daily.lastPath||"");}); }
+    addBtn(btns,"다시 도전 ▶","btn",function(){ hide("resultOv"); startRun("daily"); });
+    addBtn(btns,"공유","btn ghost",function(){shareResult(st.daily.best,st.daily.lastPath||"");});
     addBtn(btns,"🖼 저장","btn ghost",saveResultImage); addBtn(btns,"홈","btn ghost",function(){hide("resultOv");goHub();});
-    if(done && st.adCount<AD_CAP) addDailyAdBtn(btns);
     show("resultOv");
   }
   function showDailySummary(){
@@ -1787,7 +1966,6 @@
     lastResult={mode:"daily",floor:st.daily.best,name:st.name,fortune:st.daily.reveals.length?st.daily.reveals[0].text:""};
     var btns=$("resBtns"); btns.innerHTML=""; btns.style.flexWrap="";
     addBtn(btns,"공유","btn",function(){shareResult(st.daily.best,st.daily.lastPath||"");}); addBtn(btns,"🖼 저장","btn ghost",saveResultImage); addBtn(btns,"홈","btn ghost",function(){hide("resultOv");goHub();});
-    if(st.adCount<AD_CAP) addDailyAdBtn(btns);
     show("resultOv");
   }
   function renderResultBoard(kind){ var my=normName(st.name); if(kind==="daily") renderRankList($("boardList"),dailyEntries(),{kind:"daily",metric:"score",myName:my}); else renderRankList($("boardList"),loadBoard(),{kind:"endless",metric:lbMetric,myName:my}); }
@@ -1892,10 +2070,12 @@
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
         el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); }); }
     var ann=window.PJ_ANN||[];
-    if(ann.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📢 공지사항</div>');
-      ann.forEach(function(n){ var img=n.image_url?('<img src="'+n.image_url+'" alt="" style="width:100%;border-radius:8px;margin-top:8px;display:block">'):''; var body=String(n.body||"").replace(/\n/g,"<br>")+img; ntcRow(L, n.title||"", String(n.created_at||"").slice(0,10), body); }); }
-    if(NOTICES.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>');
-      NOTICES.forEach(function(n){ ntcRow(L, n.title, n.date, n.body); }); }
+    function annRow(n){ var img=n.image_url?('<img src="'+n.image_url+'" alt="" style="width:100%;border-radius:8px;margin-top:8px;display:block">'):''; ntcRow(L, n.title||"", String(n.created_at||"").slice(0,10), String(n.body||"").replace(/\n/g,"<br>")+img); }
+    var notices=ann.filter(function(n){return n.kind!=="update";}), updates=ann.filter(function(n){return n.kind==="update";});
+    if(notices.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📢 공지사항</div>'); notices.forEach(annRow); }
+    // 🆕 업데이트 소식: 서버 공지(update) 우선, 없으면 하드코딩 fallback
+    if(updates.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>'); updates.forEach(annRow); }
+    else if(NOTICES.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>'); NOTICES.forEach(function(n){ ntcRow(L, n.title, n.date, n.body); }); }
     (st.notifs||[]).forEach(function(n){ n.read=true; }); save(); var nb=$("noticeBtn"); if(nb)nb.classList.remove("alert"); }
   function renderCoinLog(){ var L=$("coinLogList"); L.innerHTML=""; $("coinLogBal").textContent=st.coins; var log=st.coinLog||[];
     if(!log.length){ L.innerHTML='<p class="lede" style="font-size:12px">아직 코인 내역이 없어요.</p>'; return; }
@@ -1939,7 +2119,7 @@
       var pieces=found?(charById(S.ch).name+"＋"+platById(S.plat).name+"＋"+accById(S.acc).name+" = "+statTxt(S)):"❓ ＋ ❓ ＋ ❓";
       var cell=document.createElement("div"); cell.className="eggcell"+(found?" got":"")+(on?" cur":"");
       cell.innerHTML='<span class="egi">'+(found?"✨":"🔒")+'</span><span class="egn"></span><span class="egh"></span>';
-      cell.querySelector(".egn").textContent=(found?S.name:"???")+(on?" · 착용중":""); cell.querySelector(".egh").textContent=pieces; wrap.appendChild(cell); });
+      cell.querySelector(".egn").textContent=S.name+(on?" · 착용중":""); cell.querySelector(".egh").textContent=pieces; wrap.appendChild(cell); });
     $("codexCount").textContent=st.setsFound.length+"/"+SETS.length; }
   function refreshTop(){ $("coinCount").textContent=st.coins; $("streakCount").textContent=st.streak; var e; if(e=$("shopBal"))e.textContent=st.coins; if(e=$("charBal"))e.textContent=st.coins; if(e=$("missionBal"))e.textContent=st.coins; }
   var lbTab="daily", lbMetric="score";
@@ -1948,8 +2128,7 @@
   function refreshHub(){ settleDaily(); ensureDaily(); ensureDailyBoard(); ensureMissions();
     $("whoName").textContent=st.name||"익명"; $("endlessMeta").textContent="최고 "+personalBest(st.name)+"칸";
     if(st.dailyPending){ $("dailyCard").classList.add("done"); $("dailyMeta").textContent="🪙"+st.dailyPending.reward+" 받기"; $("dailyDesc").textContent="🏆 어제 "+st.dailyPending.rank+"등! 보너스 수령하기"; }
-    else if(st.daily.used>=st.daily.cap){ $("dailyCard").classList.add("done"); $("dailyMeta").textContent=(st.adCount<AD_CAP?"📺 +3판 가능":"최고 "+st.daily.best+"칸 ✓"); $("dailyDesc").textContent=(st.adCount<AD_CAP?"광고 보고 3판 더 도전!":"완료 · 결과·운세 다시 보기"); }
-    else { $("dailyCard").classList.remove("done"); $("dailyMeta").textContent=st.daily.used+"/"+st.daily.cap+" · 도전!"; $("dailyDesc").textContent="노템전 · 순수 운빨 게임"; }
+    else { $("dailyCard").classList.remove("done"); $("dailyMeta").textContent=(st.daily.best>0?"최고 "+st.daily.best+"칸":"무제한 도전"); $("dailyDesc").textContent="아이템 없이 순수 운 · 무제한"; }
     $("missionBtn").classList.toggle("alert",missionsClaimable());
     $("noticeBtn").classList.toggle("alert",unreadCount()>0);
     $("inv").innerHTML='<span class="ipill">🚀<b>'+st.boosters+'</b></span><span class="ipill">✨<b>'+(st.blesses||0)+'</b></span><span class="ipill">💎<b>'+(st.doubles||0)+'</b></span><span class="ipill">🎯<b>'+(st.sures||0)+'</b></span>';
@@ -2244,12 +2423,12 @@
       sl.insertAdjacentHTML("beforeend",'<div class="statrow"><span class="sl">'+r[0]+'</span><span class="sb"><span class="ub" style="width:'+upct+'%"></span><span style="width:'+ppct+'%;background:'+(mx?"var(--gold)":r[2])+'"></span></span><span class="sv"'+(mx?' style="color:var(--gold)"':'')+'>'+(mx?"MAX":(v>0?"+"+v+"%":"-"))+'</span></div>'); });
     sl.insertAdjacentHTML("beforeend",'<div class="lede" style="font-size:9.5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px"><span style="color:#b9a5ff">■</span>유저+<span style="color:var(--cyan)">■</span>펫 합산 · 🍀성공률(기본50%＋) · 💰상금↑ · 🪶부활%</div>');
     var lv=charLevel(c.id), xp=charExp(c.id), lvbonus=(lv-1)*2, lvh='<div class="lvstat"><div class="lvtop"><span>펫 레벨 <b style="color:var(--gold)">'+stars(lv)+'</b>'+(lvbonus>0?' <span style="color:var(--gold2);font-size:10.5px">스탯 +'+lvbonus+'</span>':'')+'</span>';
-    if(lv>=3){ lvh+='<span style="color:var(--gold2)">최대 진화 ✨</span></div>'; }
+    if(lv>=5){ lvh+='<span style="color:var(--gold2)">최대 진화 ✨</span></div>'; }
     else { var need=EVO[lv-1], pct=Math.min(100,Math.round(xp/need.exp*100)), canEvo=xp>=need.exp&&st.coins>=need.cost;
       var expFull=xp>=need.exp;
       lvh+='<span style="color:var(--dim)">EXP '+Math.min(xp,need.exp)+' / '+need.exp+'</span></div><div class="jbar" style="margin-top:5px"><span style="width:'+pct+'%;background:linear-gradient(90deg,var(--cyan),var(--gold2))"></span></div>'+(canEvo?'<button class="cl evoready" id="evoBtn" style="width:100%;margin-top:7px">🔼 진화하기! (🪙'+need.cost+')</button>':'<div style="font-size:10.5px;color:var(--dim);text-align:center;margin-top:4px">'+(expFull?('진화 준비 완료! 🪙'+need.cost+' 모으면 진화'):('건넌 칸으로 EXP 충전 · 다 모으면 🪙'+need.cost+'로 진화'))+'</div>'); }
     lvh+='</div>'; sl.insertAdjacentHTML("beforeend",lvh);
-    if(lv<3){ var eb=$("evoBtn"); if(eb) eb.onclick=function(){ var nd=EVO[lv-1]; if(charExp(c.id)<nd.exp||st.coins<nd.cost)return; st.coins-=nd.cost; logCoin(-nd.cost,"🔼 "+c.name+" 진화"); st.charExp[c.id]=charExp(c.id)-nd.exp; st.charLevels[c.id]=lv+1; save(); refreshTop(); playEvolve(c, lv, lv+1); }; }
+    if(lv<5){ var eb=$("evoBtn"); if(eb) eb.onclick=function(){ var nd=EVO[lv-1]; if(charExp(c.id)<nd.exp||st.coins<nd.cost)return; st.coins-=nd.cost; logCoin(-nd.cost,"🔼 "+c.name+" 진화"); st.charExp[c.id]=charExp(c.id)-nd.exp; st.charLevels[c.id]=lv+1; save(); refreshTop(); playEvolve(c, lv, lv+1); }; }
     $("cbCharBox").onclick=function(e){ var d=cboxDir(e,this); flashArrow(this,d); cycleCos("character", d); };
     $("cbPlatBox").onclick=function(e){ var d=cboxDir(e,this); flashArrow(this,d); cycleCos("platform", d); };
     $("cbBgBox").onclick=function(e){ var d=cboxDir(e,this); flashArrow(this,d); cycleCos("accessory", d); };
@@ -2292,7 +2471,7 @@
   $("cashoutBtn").onclick=function(){ if(mode!=="endless"||!playing||busy||floor<1)return; $("cashMsg").innerHTML='여기서 그만하고 상금 <b style="color:var(--gold2)">🪙'+runPot+'</b> 받을까요?'; show("cashOv"); };
   $("cashYes").onclick=function(){ hide("cashOv"); cashOut(); };
   $("cashNo").onclick=function(){ hide("cashOv"); };
-  $("dailyCard").onclick=function(){ if(st.dailyPending){ var r=st.dailyPending; st.coins+=r.reward; logCoin(r.reward,"🏅 오늘의 도전 "+r.rank+"등"); st.dailyPending=null; save(); refreshTop(); refreshHub(); fireConfetti(); toast("🏆 어제 "+r.rank+"등 보너스 +"+r.reward+" 🪙"); return; } ensureDaily(); if(st.daily.used>=st.daily.cap){ mode="daily"; showDailySummary(); } else startRun("daily"); };
+  $("dailyCard").onclick=function(){ if(st.dailyPending){ var r=st.dailyPending; st.coins+=r.reward; logCoin(r.reward,"🏅 오늘의 도전 "+r.rank+"등"); st.dailyPending=null; save(); refreshTop(); refreshHub(); fireConfetti(); toast("🏆 어제 "+r.rank+"등 보너스 +"+r.reward+" 🪙"); return; } ensureDaily(); pxConfirm("🗓️ 오늘의 도전\n아이템 없이 순수 운(運)으로\n얼마나 멀리 가는지 도전해요.\n하루 무제한이에요!", function(){ startRun("daily"); }, "시작!"); };
   $("endlessCard").onclick=function(){ openLoadout(); };
   $("loadoutGo").onclick=function(){ hide("loadoutOv"); startRun("endless"); };
   $("loadoutCancel").onclick=function(){ hide("loadoutOv"); };
