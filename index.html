@@ -2313,7 +2313,12 @@
     COIN_PACKS.forEach(function(p){ var cell=document.createElement("div"); cell.className="cos"; cell.style.cssText="align-items:center;justify-content:center;gap:4px;position:relative";
       cell.innerHTML='<div style="font-size:24px">🪙</div><div class="cn" style="color:var(--gold2);font-size:13px">'+p.coin.toLocaleString()+'</div>'+(p.bonus?'<div style="position:absolute;top:5px;right:5px;font-size:9px;font-weight:800;color:#2a2000;background:var(--gold);padding:1px 5px;border-radius:99px">'+p.bonus+'</div>':'');
       var b=document.createElement("button"); b.className="buy"; b.textContent="₩"+p.won.toLocaleString();
-      b.onclick=function(){ st.coins+=p.coin; logCoin(p.coin,"💳 코인 충전"); sfx("coin"); save(); refreshTop(); renderShop(); toast("🪙"+p.coin+" 충전! (실제 결제는 출시 후 연동)"); };
+      b.onclick=function(){
+        if(window.PJ_AUTHED && window.PJ_TOPUP){  // 로그인: 서버 지급(테스트 전용 RPC)
+          PJ_TOPUP(p.coin).then(function(c){ if(c==null){ toast("충전 실패 — 잠시 후 다시"); return; } if(window.PJ_SETCOINS)PJ_SETCOINS(Number(c)); sfx("coin"); renderShop(); toast("🪙"+comma(p.coin)+" 충전! (실제 결제는 출시 후 연동)"); });
+          return;
+        }
+        st.coins+=p.coin; logCoin(p.coin,"💳 코인 충전"); sfx("coin"); save(); refreshTop(); renderShop(); toast("🪙"+comma(p.coin)+" 충전! (실제 결제는 출시 후 연동)"); };
       cell.appendChild(b); pg.appendChild(cell); });
     body.appendChild(pg);
     body.insertAdjacentHTML("beforeend",'<p class="lede" style="font-size:11px;opacity:.7">※ 목업 — 실제 결제는 출시 후 연동돼요.</p>');
@@ -2523,7 +2528,15 @@
     var attToday=(st.attDay===dayKey()), attReward=ATT_TABLE[Math.min(Math.max(st.streak,1),ATT_TABLE.length)-1];
     var att=document.createElement("div"); att.className="mfixed";
     att.innerHTML='<span class="mi">🔥</span><div class="mb"><div class="mn">연속 출석 보너스</div><div class="md">'+(attToday?'오늘 받음 · 내일 또 와요!':(st.streak||1)+'일차 · 매일 출석 코인')+'</div></div><button'+(attToday?' disabled':'')+'>'+(attToday?'받음 ✓':'+'+comma(attReward)+' 🪙')+'</button>';
-    att.querySelector("button").onclick=function(){ if(st.attDay===dayKey())return; touchStreak(); st.attDay=dayKey(); var rw=ATT_TABLE[Math.min(Math.max(st.streak,1),ATT_TABLE.length)-1]; st.coins+=rw; logCoin(rw,"🔥 출석 "+st.streak+"일차"); sfx("coin"); save(); refreshTop(); renderMissions(); refreshHub(); toast("🔥 출석 "+st.streak+"일차 +"+rw+" 🪙"); };
+    att.querySelector("button").onclick=function(){ if(st.attDay===dayKey())return;
+      if(window.PJ_AUTHED && window.PJ_ATTEND){  // 로그인: 서버검증 출석
+        PJ_ATTEND().then(function(res){ if(!res)return; st.attDay=dayKey();
+          if(res.already){ if(res.streak!=null)st.streak=res.streak; save(); renderMissions(); return; }
+          if(res.coins!=null&&window.PJ_SETCOINS)PJ_SETCOINS(Number(res.coins)); if(res.streak!=null)st.streak=res.streak; st.lastDay=dayKey(); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); refreshTop(); renderMissions(); refreshHub(); sfx("coin"); toast("🔥 출석 "+(res.streak||st.streak)+"일차 +"+comma(res.reward||0)+" 🪙"); });
+        return;
+      }
+      // 게스트: 로컬
+      touchStreak(); st.attDay=dayKey(); var rw=ATT_TABLE[Math.min(Math.max(st.streak,1),ATT_TABLE.length)-1]; st.coins+=rw; logCoin(rw,"🔥 출석 "+st.streak+"일차"); sfx("coin"); save(); refreshTop(); renderMissions(); refreshHub(); toast("🔥 출석 "+st.streak+"일차 +"+comma(rw)+" 🪙"); };
     wrap.appendChild(att);
     var inv=document.createElement("div"); inv.className="mfixed";
     inv.innerHTML='<span class="mi">🎁</span><div class="mb"><div class="mn">친구 초대</div><div class="md">가입 시 나랑 친구 둘 다 🪙300!</div></div><button>초대하기</button>';
@@ -2827,6 +2840,8 @@
   window.PJ_BUY=function(id){ return (async function(){ try{ var r=await sb.rpc('buy_cosmetic',{p_id:id}); if(r.error) return {ok:false,err:r.error.message||""}; return r.data||{ok:false}; }catch(e){ return {ok:false,err:String(e)}; } })(); };
   window.PJ_ROLL=function(){ return (async function(){ try{ var r=await sb.rpc('roll_gacha'); if(r.error) return null; return r.data||null; }catch(e){ return null; } })(); };
   window.PJ_FREECOS=function(){ return (async function(){ try{ var r=await sb.rpc('claim_free_cosmetic'); if(r.error) return null; return r.data||null; }catch(e){ return null; } })(); };
+  window.PJ_ATTEND=function(){ return (async function(){ try{ var r=await sb.rpc('claim_attendance'); if(r.error) return null; return r.data||null; }catch(e){ return null; } })(); };
+  window.PJ_TOPUP=function(coin){ return (async function(){ try{ var r=await sb.rpc('dev_topup',{p_coin:coin}); if(r.error) return null; return r.data; }catch(e){ return null; } })(); };
   // 약관/개인정보 서버본 조회(테스터=draft, 그 외=live). 없으면 null → 게임 하드코딩 fallback.
   window.PJ_GETDOC=function(key){ return (async function(){ try{ var r=await sb.rpc('get_doc',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
   window.PJ_GETCFG=function(key){ return (async function(){ try{ var r=await sb.rpc('get_cfg',{p_key:key}); return (r&&r.data)?r.data:null; }catch(e){ return null; } })(); };
