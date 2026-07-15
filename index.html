@@ -269,6 +269,10 @@
   .cos { border:2px solid var(--line); padding:8px; display:flex; flex-direction:column; gap:6px; background:#1b1538; align-items:center; }
   .cos.unowned canvas, .cos.unowned .accem, .cos.unowned .cn, .cos.unowned .cst { filter:grayscale(1) opacity(.62); }
   .cos.unowned .buy { filter:none; }  /* 구매 버튼은 컬러 유지 */
+  @keyframes giftwob { 0%,100%{transform:rotate(0)} 15%{transform:rotate(-13deg)} 32%{transform:rotate(11deg)} 50%{transform:rotate(-9deg)} 68%{transform:rotate(7deg)} 85%{transform:rotate(-4deg)} }
+  #giftBoxIcon.shake { animation:giftwob .5s ease-in-out infinite; }
+  @keyframes giftpop { 0%{transform:scale(.6);opacity:.4} 55%{transform:scale(1.5)} 100%{transform:scale(1)} }
+  #giftBoxIcon.pop { animation:giftpop .4s ease-out; }
   .cos.eq { border-color:var(--gold); }
   .cos canvas { width:auto; height:50px; image-rendering:pixelated; display:block; margin:0 auto; background:#12102a; }
   .cos .accem { width:100%; height:50px; display:grid; place-items:center; font-size:30px; background:#12102a; }
@@ -550,7 +554,7 @@
 
 <!-- cashout confirm -->
 <div class="ov" id="cashOv" hidden><div class="card" style="text-align:center"><div class="kick">🏦 그만하기</div><div class="rnote" id="cashMsg"></div><div class="btn-row"><button class="btn" id="cashYes">받고 끝내기</button><button class="btn ghost" id="cashNo">계속하기</button></div></div></div>
-<div class="ov" id="dailyIntroOv" hidden><div class="card"><div class="kick">🗓️ 오늘의 도전</div><p class="lede">아이템 없이 <b>순수 운(運)</b>으로 얼마나 멀리 가는지! 하루 <b>무제한</b>이에요.<br>매 판 오늘의 운세·행운 정보를 하나씩 (하루 5개).</p><div id="dailyReveals" style="display:flex;flex-direction:column;gap:6px;margin:4px 0 2px"></div><div style="display:flex;flex-direction:column;gap:8px"><button class="btn" id="dailyStartBtn">시작! ▶</button><button class="btn ghost" id="dailyIntroClose">닫기</button></div></div></div>
+<div class="ov" id="dailyIntroOv" hidden><div class="card"><div class="kick">🗓️ 오늘의 도전</div><p class="lede">아이템 없이 <b>순수 운(運)</b>으로 얼마나 멀리 가는지!<br>매 판 오늘의 운세·행운 정보를 하나씩 (하루 5개).</p><div id="dailyReveals" style="display:flex;flex-direction:column;gap:6px;margin:4px 0 2px"></div><div style="display:flex;flex-direction:column;gap:8px"><button class="btn" id="dailyStartBtn">시작! ▶</button><button class="btn ghost" id="dailyIntroClose">닫기</button></div></div></div>
 
 <!-- friends / team -->
 <div class="ov" id="friendsOv" hidden><div class="card"><div class="mhead"><h2>👥 친구 · 팀</h2></div><div id="friendsBody" style="display:flex;flex-direction:column;gap:8px"></div><button class="btn ghost" id="friendsClose">닫기</button></div></div>
@@ -575,6 +579,7 @@
 <!-- gacha result -->
 <div class="ov" id="gachaOv" hidden><div class="card" style="text-align:center"><div class="kick">🎰 뽑기 결과</div><span class="rchip" id="gachaRarity" style="align-self:center"></span><div id="gachaPrev" style="display:grid;place-items:center;min-height:84px"></div><h2 id="gachaName"></h2><div class="rnote" id="gachaMsg"></div><div class="btn-row"><button class="btn" id="gachaEquip">착용</button><button class="btn ghost" id="gachaAgain">한 번 더</button><button class="btn ghost" id="gachaClose">닫기</button></div></div></div>
 <div class="ov" id="luckyOv" hidden style="z-index:31"><div class="card" style="text-align:center"><div class="kick" id="luckyKick">🎁 몰래 온 선물</div><div id="luckyEmoji" style="font-size:56px;margin:6px 0;line-height:1"></div><h2 id="luckyName"></h2><div class="rnote" id="luckyMsg"></div><div class="btn-row"><button class="btn" id="luckyOk">좋아! ▶</button></div></div></div>
+<div class="ov" id="giftShakeOv" hidden style="z-index:31"><div class="card" style="text-align:center"><div id="giftBoxIcon" style="font-size:76px;line-height:1;display:inline-block;transform-origin:bottom center">🎁</div><div id="giftShakeTip" style="margin-top:6px">두근두근…</div></div></div>
 
 <!-- easter egg codex -->
 <div class="ov" id="eggOv" hidden style="z-index:34"><div class="card"><div class="mhead"><h2>🥚 이스터에그 도감</h2></div><p class="lede" id="eggHead"></p><div id="eggList" class="egggrid"></div><button class="btn ghost" id="eggClose">닫기</button></div></div>
@@ -735,6 +740,7 @@
   var MENTS = ["힘내! 💪","같이 한 판? 🐸","오늘 운 좋다! 🍀","1등 가자 🔥","고마워 🙏","축하해! 🎉","지지마 😤","폴짝폴짝~"];
   var RIVAL_TEAMS = ["번개폴짝단","행운의 개구리들","무적 징검다리","황금발판 클럽"];
   function fmtM(m){ return m>=1000?(m/1000).toFixed(m>=10000?0:1)+"km":m+"m"; }
+  function comma(n){ return (Number(n)||0).toLocaleString("en-US"); }  /* 코인 등 3자리 콤마 */
   var NOTICES = [
     { date:"2026-07-11", title:"🎖 펫 & 유저 뱃지 시스템!", body:"이제 '나(유저)'가 펫을 키워요! 오늘의 도전·주간·팀전 랭킹 성과, 시너지 세트·이스터에그 수집으로 뱃지를 얻으면 유저 스탯(🍀행운/💰상금/🪶부활)이 영구히 올라 펫 스탯에 더해집니다. 펫 창의 '🎖 유저 뱃지'에서 확인해요! (엔드리스 적용)" },
     { date:"2026-07-11", title:"⭐ 실력 부활 추가! (엔드리스)", body:"엔드리스에서 첨벙 빠졌을 때, 랜덤 미니게임(타이밍 멈추기·연타·정확히 탭)이 떠요. 성공하면 매달렸다 다시 올라와 이어서 도전! 단, 한 판에서 여러 번 살아날수록 점점 어려워집니다. 운빨에 실력 한 스푼 🥄" },
@@ -1463,7 +1469,7 @@
     var potLab=$("stPotCell").querySelector(".stl");
     if(daily){ if(potLab)potLab.textContent="오늘 최고"; $("potVal").textContent=((st.daily&&st.daily.best)||0)+"칸"; return; }
     if(!endless) return;
-    if(potLab)potLab.textContent="누적 상금"; $("potVal").textContent="🪙"+runPot; }
+    if(potLab)potLab.textContent="누적 상금"; $("potVal").textContent="🪙"+comma(runPot); }
   function updateProb(){ var endless=(mode==="endless"), daily=(mode==="daily");
     var luck=endless?(curStats.luck+(charmActive?CHARM_LUCK:0)+(boosterArmed?BOOST_LUCK:0)+(blessN>0?25:0)):0; var lk=(luck>0?'50%+'+luck+'%':'50%');
     var potpart=endless?(' · 성공 시 <b>🪙+'+gainFor(floor+1)+'</b>'):'';
@@ -1504,7 +1510,7 @@
       honeyActive = buyRun("honey"); if(honeyActive){ runUsedHoney=true; curStats.bounty+=50; }
       shieldReady = buyRun("tube"); if(shieldReady)runUsedTube=true;
       featherActive = buyRun("feather");
-      refreshTop(); save(); $("rightLab").textContent="최고"; $("rightVal").textContent=personalBest(st.name);
+      refreshTop(); save(); $("rightLab").textContent="역대 최고"; $("rightVal").textContent=personalBest(st.name);
     }
     renderHist(); renderLoadout(); updateEcon(); updateProb();
     armRound(); setPhase("ready"); startLoop(); showScreen("play");
@@ -1548,11 +1554,23 @@
   function luckyBox(tip, cb){ var ball=$("rollBall"), flash=$("rollFlash"); ball.classList.remove("crack"); flash.classList.remove("on"); $("rollTip").textContent=tip; show("rollOv"); void ball.offsetWidth; vibrate([0,90,90,90,90,90]);
     setTimeout(function(){ ball.classList.add("crack"); flash.classList.add("on"); vibrate([30,40,120]);
       setTimeout(function(){ hide("rollOv"); ball.classList.remove("crack"); flash.classList.remove("on"); cb(); }, 430); }, 1300); }
+  // 선물상자: 🎁가 흔들리다 🎉로 뻥! (포켓볼 대신)
+  function giftBox(tip, cb){ var ic=$("giftBoxIcon"), t=$("giftShakeTip"); ic.textContent="🎁"; ic.className=""; t.textContent=tip; show("giftShakeOv"); void ic.offsetWidth; ic.classList.add("shake"); vibrate([0,90,90,90,90,90]);
+    setTimeout(function(){ ic.classList.remove("shake"); ic.textContent="🎉"; ic.classList.add("pop"); vibrate([30,40,120]);
+      setTimeout(function(){ hide("giftShakeOv"); cb(); }, 430); }, 1300); }
+  // 게임 중 공짜뽑기 결과 — 착용/한번더 없이 '무엇을 얻었나'만 보여주고 여정 계속
+  function showLuckyCosmetic(pick,dup){ var it=pick.it; $("luckyKick").textContent="🎁 행운의 공짜 뽑기";
+    var em=$("luckyEmoji"); em.innerHTML="";
+    if(pick.type==="accessory"){ var acv=document.createElement("canvas"); acv.width=24; acv.height=24; acv.style.imageRendering="pixelated"; acv.style.height="72px"; var actx=acv.getContext("2d"); actx.imageSmoothingEnabled=false; drawAccIcon(actx,it.id); em.appendChild(acv); }
+    else { var cv=document.createElement("canvas"); cv.width=56; cv.height=48; cv.style.imageRendering="pixelated"; cv.style.height="70px"; var cxx=cv.getContext("2d"); cxx.imageSmoothingEnabled=false; if(pick.type==="character")drawChar(cxx,it,28,44,false,"none"); else drawStoneTop(cxx,it,28,26,false,1); em.appendChild(cv); }
+    $("luckyName").innerHTML=escapeH(it.name)+" "+rchip(it);
+    $("luckyMsg").innerHTML=dup?'이미 보유중이에요 · 여정 계속!':'<b style="color:var(--gold2)">NEW!</b> 획득! · 여정 계속!';
+    show("luckyOv"); fireConfetti(); vibrate([20,40,60,40,90]); }
   function luckyFreeGacha(){ var pool=gachaPool(); if(!pool.length)return; var tot=0,i; for(i=0;i<pool.length;i++)tot+=RW[pool[i].it.r||"common"]; var rnd=Math.random()*tot,pick=pool[0]; for(i=0;i<pool.length;i++){ rnd-=RW[pool[i].it.r||"common"]; if(rnd<=0){ pick=pool[i]; break; } } var key=pick.type,it=pick.it,dup=st.owned[key].indexOf(it.id)>=0; if(!dup){ st.owned[key].push(it.id); if(window.PJ_GRANT)PJ_GRANT(key,it.id); } st.gachaTotal=(st.gachaTotal||0)+1; save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW();
-    luckyBox("🎁 행운의 공짜 뽑기!", function(){ showGacha(pick,dup); toast("🎁 행운의 공짜 뽑기 — "+it.name+(dup?" (이미 보유)":" 획득!")); }); }
-  function luckySurprise(){ var emoji,name,msg; if(Math.random()<0.5){ var amt=10+Math.floor(Math.random()*91); st.coins+=amt; logCoin(amt,"🎁 몰래 온 선물"); refreshTop(); emoji="🪙"; name="코인 +"+amt; msg="지갑에 살짝 넣어뒀어요"; }
+    luckyBox("🎁 행운의 공짜 뽑기!", function(){ showLuckyCosmetic(pick,dup); toast("🎁 행운의 공짜 뽑기 — "+it.name+(dup?" (이미 보유)":" 획득!")); }); }
+  function luckySurprise(){ var emoji,name,msg; if(Math.random()<0.5){ var amt=10+Math.floor(Math.random()*91); st.coins+=amt; logCoin(amt,"🎁 몰래 온 선물"); refreshTop(); emoji="🪙"; name="코인 +"+comma(amt); msg="지갑에 살짝 넣어뒀어요"; }
     else { var its=[["boosters","🚀","부스터"],["blesses","✨","축복"],["doubles","💎","한탕"],["sures","🎯","정조준"]], pk=its[Math.floor(Math.random()*4)]; st[pk[0]]=(st[pk[0]]||0)+1; save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); emoji=pk[1]; name=pk[2]+" +1"; msg="아이템 하나 챙겼어요"; renderLoadout(); }
-    luckyBox("🎁 몰래 온 선물…", function(){ $("luckyEmoji").textContent=emoji; $("luckyName").textContent=name; $("luckyMsg").textContent=msg; show("luckyOv"); fireConfetti(); vibrate([20,40,60,40,90]); toast("🎁 몰래 온 선물!"); }); }
+    giftBox("🎁 몰래 온 선물…", function(){ $("luckyKick").textContent="🎁 몰래 온 선물"; $("luckyEmoji").innerHTML=""; $("luckyEmoji").textContent=emoji; $("luckyName").textContent=name; $("luckyMsg").textContent=msg; show("luckyOv"); fireConfetti(); vibrate([20,40,60,40,90]); toast("🎁 몰래 온 선물!"); }); }
   function afterHopOK(){
     setPhase("success"); sfx((game.savedBy && game.savedBy!=="luck")?"save":"hop");
     // 🍀 행운(luck)은 '정답률'이라 틀린 선택을 조용히 성공 처리(팝업 없음). 부활 연출은 실제 넘어진 뒤에만.
@@ -1978,16 +1996,16 @@
     if(window.PJ_SUBMIT) PJ_SUBMIT('endless', floor, runProb, {character:st.character,platform:st.platform,accessory:st.accessory,lvl:charLevel(st.character)}, outcome==='cashout'?'cashout':'death', gain);
     $("resFloor").textContent=floor; $("resCap").textContent="칸을 건넜어요";
     var kick=$("resKick"), note=$("resNote"), cl=$("resCoins"); cl.hidden=false;
-    if(outcome==="cashout"){ kick.textContent="안전 회수 🏦"; note.textContent=rec?"★ 최고 기록도 경신! ★":"상금을 챙겼어요."; note.className=rec?"rnote rec":"rnote"; cl.innerHTML='+'+gain+' 🪙 <span class="m">상금</span>'; }
+    if(outcome==="cashout"){ kick.textContent="안전 회수 🏦"; note.textContent=rec?"★ 최고 기록도 경신! ★":"상금을 챙겼어요."; note.className=rec?"rnote rec":"rnote"; cl.innerHTML='+'+comma(gain)+' 🪙 <span class="m">상금</span>'; }
     else { if(floor===0){ kick.textContent="앗, 첨벙!"; note.textContent="첫 발판부터… 운은 알 수 없죠."; note.className="rnote"; }
       else if(rec){ kick.textContent="신기록! 🎉"; note.textContent="★ 내 최고 기록 경신 ★"; note.className="rnote rec"; }
       else { kick.textContent="첨벙!"; note.textContent="최고 "+prev+"칸까지 "+(prev-floor)+"칸 남았어요."; note.className="rnote"; }
-      cl.innerHTML='+'+gain+' 🪙 <span class="m">위로금 (상금의 50%)</span>'; }
+      cl.innerHTML='+'+comma(gain)+' 🪙 <span class="m">위로금 (상금의 50%)</span>'; }
     $("resProb").textContent = floor>0 ? ("이 기록 돌파 확률 "+fmtPct(runProb)) : "";
     $("resFortune").hidden=true;
     $("resBt").textContent="🕐 최근 플레이"; document.querySelector("#resultOv .board").hidden=false; $("resShareWrap").hidden=true;
     renderRecentBoard($("boardList"));
-    var btns=$("resBtns"); btns.innerHTML=""; btns.style.flexWrap=""; addBtn(btns,"다시","btn",function(){hide("resultOv");startRun("endless");}); addBtn(btns,"공유","btn ghost",function(){shareResult(floor,runPath||"");}); addBtn(btns,"홈","btn ghost",function(){hide("resultOv");goHub();});
+    var btns=$("resBtns"); btns.innerHTML=""; btns.style.flexWrap=""; addBtn(btns,"재도전","btn",function(){hide("resultOv");startRun("endless");}); addBtn(btns,"공유","btn ghost",function(){shareResult(floor,runPath||"");}); addBtn(btns,"홈","btn ghost",function(){hide("resultOv");goHub();});
     if(outcome==="fall") deathIntro(function(){ show("resultOv"); }); else show("resultOv");
   }
   var GAMEOVER_MSGS=["앗, 미끌!","어이쿠 첨벙!","아깝다…!","한 끗 차이!","앗차차~","미끄덩!","에구, 풍덩!","조금만 더!"];
@@ -2016,11 +2034,11 @@
     $("resFloor").textContent=floorNow; $("resKick").textContent="오늘의 도전";
     var note=$("resNote"),cl=$("resCoins");
     note.textContent="최고 "+st.daily.best+"칸 · 현재 "+rank+"위 · 무제한 도전!"; note.className=rank<=10?"rnote rec":"rnote";
-    cl.hidden=false; cl.innerHTML='🪙+'+base+' <span class="m">기본</span><br><span class="m" style="font-size:11px">TOP3 보너스는 <b style="color:var(--gold2)">자정에 확정</b> → 내일 수령</span>';
+    cl.hidden=false; cl.innerHTML='🪙+'+comma(base)+' <span class="m">기본</span><br><span class="m" style="font-size:11px">TOP3 보너스는 <b style="color:var(--gold2)">자정에 확정</b> → 내일 수령</span>';
     var fo=$("resFortune"); if(rv){ fo.hidden=false; fo.innerHTML=fortuneHTML(rv); } else { fo.hidden=true; }  // 첫 3판만 운세카드
     dailyResultCommon();
     var btns=$("resBtns"); btns.innerHTML=""; btns.style.flexWrap="";
-    addBtn(btns,"다시 도전 ▶","btn",function(){ hide("resultOv"); startRun("daily"); });
+    addBtn(btns,"재도전 ▶","btn",function(){ hide("resultOv"); startRun("daily"); });
     addBtn(btns,"공유","btn ghost",function(){shareResult(st.daily.best,st.daily.lastPath||"");});
     addBtn(btns,"홈","btn ghost",function(){hide("resultOv");goHub();});
     show("resultOv");
@@ -2148,17 +2166,17 @@
     if(updates.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>'); updates.forEach(annRow); }
     else if(NOTICES.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🆕 업데이트 소식</div>'); NOTICES.forEach(function(n){ ntcRow(L, n.title, n.date, n.body); }); }
     (st.notifs||[]).forEach(function(n){ n.read=true; }); save(); var nb=$("noticeBtn"); if(nb)nb.classList.remove("alert"); }
-  function renderCoinLog(){ var L=$("coinLogList"); L.innerHTML=""; $("coinLogBal").textContent=st.coins; var log=st.coinLog||[];
+  function renderCoinLog(){ var L=$("coinLogList"); L.innerHTML=""; $("coinLogBal").textContent=comma(st.coins); var log=st.coinLog||[];
     if(!log.length){ L.innerHTML='<p class="lede" style="font-size:12px">아직 코인 내역이 없어요.</p>'; return; }
     var running=st.coins;  // 최신 내역의 결과잔액=현재잔액. 위에서부터 델타를 빼며 역산.
-    log.forEach(function(e){ var row=document.createElement("div"); row.className="clogrow"; var balAfter=running; running-=(e.d||0);
-      row.innerHTML='<div class="clr"><b></b><span class="clt">'+e.t+'</span></div><div class="clright"><span class="clv '+(e.d>=0?"plus":"minus")+'">'+(e.d>=0?"+":"")+e.d+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.r; L.appendChild(row); }); }
+    log.forEach(function(e){ if(!e.d)return; var row=document.createElement("div"); row.className="clogrow"; var balAfter=running; running-=(e.d||0);
+      row.innerHTML='<div class="clr"><b></b><span class="clt">'+e.t+'</span></div><div class="clright"><span class="clv '+(e.d>=0?"plus":"minus")+'">'+(e.d>=0?"+":"")+comma(e.d)+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.r; L.appendChild(row); }); }
   // 서버 원장(coin_transactions)에서 받은 내역으로 재렌더 — 전체내역·기기간 동일·서버 기록 잔액(balance_after) 표시.
   window.PJ_RENDERCOINLOG=function(rows){ if(!Array.isArray(rows)||!rows.length)return; var L=$("coinLogList"); if(!L)return; L.innerHTML="";
     var running=st.coins;  // balance_after 없으면 현재잔액 기준 역산 폴백
-    rows.forEach(function(e){ var d=Number(e.delta)||0, row=document.createElement("div"); row.className="clogrow"; var t=""; try{ var dt=new Date(e.created_at); t=(dt.getMonth()+1)+"/"+dt.getDate()+" "+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2); }catch(_){}
+    rows.forEach(function(e){ var d=Number(e.delta)||0; if(d===0)return; var row=document.createElement("div"); row.className="clogrow"; var t=""; try{ var dt=new Date(e.created_at); t=(dt.getMonth()+1)+"/"+dt.getDate()+" "+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2); }catch(_){}
       var balAfter=(e.balance_after!=null)?Number(e.balance_after):running; running=balAfter-d;
-      row.innerHTML='<div class="clr"><b></b><span class="clt">'+t+'</span></div><div class="clright"><span class="clv '+(d>=0?"plus":"minus")+'">'+(d>=0?"+":"")+d+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.reason||""; L.appendChild(row); }); }
+      row.innerHTML='<div class="clr"><b></b><span class="clt">'+t+'</span></div><div class="clright"><span class="clv '+(d>=0?"plus":"minus")+'">'+(d>=0?"+":"")+comma(d)+' 🪙</span><span class="clbal">→ '+balAfter.toLocaleString()+'</span></div>'; row.querySelector("b").textContent=e.reason||""; L.appendChild(row); }); }
   function openCoinLog(){ renderCoinLog(); show("coinLogOv"); if(window.PJ_FETCHCOINLOG) PJ_FETCHCOINLOG().then(function(rows){ if(rows&&rows.length&&window.PJ_RENDERCOINLOG) PJ_RENDERCOINLOG(rows); }); }
   function showIntro(mode){ var welcome=(mode==="welcome");
     if(welcome){ $("introKick").textContent="🐸"; $("introTitle").textContent="폴짝홀짝에 온 걸 환영해요!"; $("introBody").innerHTML=WELCOME_HTML; $("introOk").textContent="시작하기"; }
@@ -2192,7 +2210,7 @@
       cell.innerHTML='<span class="egi">'+(found?"✨":"🔒")+'</span><span class="egn"></span><span class="egh"></span>';
       cell.querySelector(".egn").textContent=S.name+(on?" · 착용중":""); cell.querySelector(".egh").textContent=pieces; wrap.appendChild(cell); });
     $("codexCount").textContent=st.setsFound.length+"/"+SETS.length; }
-  function refreshTop(){ $("coinCount").textContent=st.coins; $("streakCount").textContent=st.streak; var e; if(e=$("shopBal"))e.textContent=st.coins; if(e=$("charBal"))e.textContent=st.coins; if(e=$("missionBal"))e.textContent=st.coins; }
+  function refreshTop(){ $("coinCount").textContent=comma(st.coins); $("streakCount").textContent=st.streak; var e; if(e=$("shopBal"))e.textContent=comma(st.coins); if(e=$("charBal"))e.textContent=comma(st.coins); if(e=$("missionBal"))e.textContent=comma(st.coins); }
   var lbTab="daily", lbMetric="score";
   function drawMini(canvasId, kind){ var cv=$(canvasId); if(!cv)return; var cx=cv.getContext("2d"); cx.imageSmoothingEnabled=false; cx.clearRect(0,0,cv.width,cv.height);
     if(kind==="char"){ drawChar(cx,charById(st.character),cv.width/2,cv.height-4,false); } }
@@ -2291,8 +2309,8 @@
     body.appendChild(pg);
     body.insertAdjacentHTML("beforeend",'<p class="lede" style="font-size:11px;opacity:.7">※ 목업 — 실제 결제는 출시 후 연동돼요.</p>');
   }
-  function renderShop(){ $("shopBal").textContent=st.coins; var body=$("shopBody"); body.innerHTML="";
-    body.insertAdjacentHTML("beforeend",'<button class="btn" id="gachaBtn" style="width:100%">🎰 랜덤 뽑기 · 🪙'+GACHA_COST+'</button><div class="lede" style="font-size:11px">펫·발판·악세 전체에서 랜덤! 좋은 것일수록 낮은 확률<br><b style="color:var(--dim)">중복이 나와도 환불은 없어요</b></div><div class="lede" style="font-size:9.5px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+gachaOddsHTML()+'</div>');
+  function renderShop(){ $("shopBal").textContent=comma(st.coins); var body=$("shopBody"); body.innerHTML="";
+    body.insertAdjacentHTML("beforeend",'<button class="btn" id="gachaBtn" style="width:100%">🎰 랜덤 뽑기 · 🪙'+comma(GACHA_COST)+'</button><div class="lede" style="font-size:11px">펫·발판·악세 전체에서 랜덤! 좋은 것일수록 낮은 확률<br><b style="color:var(--dim)">중복이 나와도 환불은 없어요</b></div><div class="lede" style="font-size:9.5px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+gachaOddsHTML()+'</div>');
     COS.forEach(function(cat){ body.insertAdjacentHTML("beforeend",'<div class="sect">'+cat.title+'</div>'); var grid=document.createElement("div"); grid.className="cos-grid";
       var RORD={common:0,rare:1,epic:2,legend:3};
       cat.list.slice().sort(function(a,b){ var oA=st.owned[cat.key].indexOf(a.id)>=0, oB=st.owned[cat.key].indexOf(b.id)>=0; var la=(a.secret&&!oA&&!secretUnlocked(a))?1:0, lb=(b.secret&&!oB&&!secretUnlocked(b))?1:0; if(la!==lb)return la-lb; var dr=RORD[a.r||"common"]-RORD[b.r||"common"]; if(dr)return dr; return (oA?0:1)-(oB?0:1); }).forEach(function(it){ var owned=st.owned[cat.key].indexOf(it.id)>=0, eq=cat.get()===it.id, pr=cprice(it);
@@ -2301,19 +2319,20 @@
         var cell=document.createElement("div"); cell.className="cos"+(eq?" eq":"")+(it.secret?" secret":"")+(owned?"":" unowned");  /* 미보유=흑백톤(구매버튼만 컬러) */
         var cw=(cat.kind==="char")?22:(cat.kind==="acc")?24:56, chh=(cat.kind==="char")?28:(cat.kind==="acc")?24:36;
         var prev=(cat.kind==="acc"&&it.id==="none")?('<div class="accem">—</div>'):'<canvas width="'+cw+'" height="'+chh+'"></canvas>';
-        cell.innerHTML=prev+'<div class="cn">'+it.name+' '+rchip(it)+'</div><div class="cst">'+statTxt(it)+'</div>';
+        var starLine=(cat.kind==="char"&&owned)?('<div class="cst" style="color:var(--gold);letter-spacing:1px;font-size:12px">'+stars(charLevel(it.id))+'</div>'):'';  /* 보유 캐릭터 별(레벨) 표시 */
+        cell.innerHTML=prev+'<div class="cn">'+it.name+' '+rchip(it)+'</div><div class="cst">'+statTxt(it)+'</div>'+starLine;
         if(!(cat.kind==="acc"&&it.id==="none")){ var cv=cell.querySelector("canvas"), cxx=cv.getContext("2d"); cxx.imageSmoothingEnabled=false;
           if(cat.kind==="char"){ drawChar(cxx,it,11,26,false,"none"); } else if(cat.kind==="acc"){ cv.style.height="60px"; drawAccIcon(cxx,it.id); } else drawStoneTop(cxx,it,28,22,false,1); }
         var btn=document.createElement("button");
         if(it.secret && !owned){ btn.className="buy"; btn.textContent="🎰 뽑기 전용"; btn.disabled=true; }
-        else if(!owned){ btn.className="buy"; btn.textContent="🪙"+pr; btn.disabled=st.coins<pr; btn.onclick=function(){ if(st.coins<pr)return; st.coins-=pr; logCoin(-pr,"🛍 "+it.name); st.owned[cat.key].push(it.id); if(window.PJ_GRANT)PJ_GRANT(cat.key,it.id); cat.set(it.id); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); refreshTop(); checkSet(); renderShop(); drawHero(); applyTheme(); toast(it.name+" 획득!"); }; }
+        else if(!owned){ btn.className="buy"; btn.textContent="🪙"+comma(pr); btn.disabled=st.coins<pr; btn.onclick=function(){ if(st.coins<pr)return; st.coins-=pr; logCoin(-pr,"🛍 "+it.name); st.owned[cat.key].push(it.id); if(window.PJ_GRANT)PJ_GRANT(cat.key,it.id); cat.set(it.id); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); refreshTop(); checkSet(); renderShop(); drawHero(); applyTheme(); toast(it.name+" 획득!"); }; }
         else { btn.className="eqb"+(eq?" on":""); btn.textContent=eq?"착용 중":"착용"; btn.disabled=eq; btn.onclick=function(){ cat.set(it.id); save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); checkSet(); renderShop(); drawHero(); applyTheme(); }; }
         cell.appendChild(btn); grid.appendChild(cell); });
       body.appendChild(grid); });
     $("gachaBtn").onclick=doGacha;
     body.insertAdjacentHTML("beforeend",'<div class="sect">게임 중 아이템 (미리 사두고 판 안에서 사용)</div>');
     ITEMS.filter(function(it){return it.kind==="turn" && it.active!==false;}).forEach(function(it){ var row=document.createElement("div"); row.className="item-row";
-      row.innerHTML='<span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'<span class="q">보유 '+st[it.cnt]+'</span></div><div class="idc">'+it.desc+'</div></div><button class="bu">🪙'+it.price+'</button>';
+      row.innerHTML='<span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'<span class="q">보유 '+st[it.cnt]+'</span></div><div class="idc">'+it.desc+'</div></div><button class="bu">🪙'+comma(it.price)+'</button>';
       var bu=row.querySelector(".bu"); bu.disabled=st.coins<it.price; bu.onclick=function(){ if(st.coins<it.price)return; st.coins-=it.price; logCoin(-it.price,"🛍 "+it.name); st[it.cnt]++; sfx("coin"); save(); refreshTop(); renderShop(); toast(it.name+" +1"); };
       $("shopBody").appendChild(row); });
     renderCoinCharge($("shopBody")); }
@@ -2327,7 +2346,7 @@
     var wrap=$("loadoutList"); wrap.innerHTML="";
     ITEMS.filter(function(it){ return it.kind==="run" && it.active!==false; }).forEach(function(it){ var on=st[it.use];
       var row=document.createElement("div"); row.className="item-row loadrow"+(on?" on":"");
-      row.innerHTML='<span class="lchk">'+(on?"☑":"☐")+'</span><span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'</div><div class="tag">'+it.desc+'</div></div><span class="lprice">🪙'+it.price+'</span>';
+      row.innerHTML='<span class="lchk">'+(on?"☑":"☐")+'</span><span class="ii">'+it.ic+'</span><div class="ib"><div class="inm">'+it.name+'</div><div class="tag">'+it.desc+'</div></div><span class="lprice">🪙'+comma(it.price)+'</span>';
       row.onclick=function(){ if(!st[it.use] && loadoutCost()+it.price>st.coins){ toast("코인이 부족해요"); return; } st[it.use]=!st[it.use]; save(); renderLoadoutModal(); };
       wrap.appendChild(row); });
     var tot=loadoutCost();
@@ -2459,17 +2478,17 @@
   function pxPrompt(title, initial, onOk, maxlen){ $("promptTitle").textContent=title; var inp=$("promptInput"); inp.value=initial||""; inp.maxLength=maxlen||12; show("promptOv"); setTimeout(function(){ try{inp.focus();}catch(e){} },130);
     function ok(){ var v=inp.value.trim(); hide("promptOv"); if(v&&onOk)onOk(v); }
     $("promptOk").onclick=ok; $("promptCancel").onclick=function(){ hide("promptOv"); }; inp.onkeydown=function(e){ if(e.key==="Enter")ok(); }; }
-  function renderMissions(){ ensureMissions(); ensureAd(); $("missionBal").textContent=st.coins; var wrap=$("missionList"); wrap.innerHTML="";
+  function renderMissions(){ ensureMissions(); ensureAd(); $("missionBal").textContent=comma(st.coins); var wrap=$("missionList"); wrap.innerHTML="";
     st.missions.items.forEach(function(m){ var def=missionDef(m.id)||{}; var label=def.label||m.label||"미션", reward=def.reward!=null?def.reward:(m.reward||0), target=def.target!=null?def.target:m.target;
       var done=m.prog>=target, el=document.createElement("div"); el.className="mission"+(done?" done":"")+(m.claimed?" claimed":""); var pct=Math.min(100,Math.round(m.prog/target*100));
-      el.innerHTML='<div class="top"><span class="ml"></span><span class="rw">+'+reward+' 🪙</span></div><div class="bar"><span style="width:'+pct+'%"></span></div><div class="ft"><span class="pg">'+Math.min(m.prog,target)+' / '+target+'</span></div>'; el.querySelector(".ml").textContent=label;
+      el.innerHTML='<div class="top"><span class="ml"></span><span class="rw">+'+comma(reward)+' 🪙</span></div><div class="bar"><span style="width:'+pct+'%"></span></div><div class="ft"><span class="pg">'+Math.min(m.prog,target)+' / '+target+'</span></div>'; el.querySelector(".ml").textContent=label;
       var cl=document.createElement("button"); cl.className="cl";
-      if(m.claimed){ cl.textContent="받음 ✓"; cl.disabled=true; } else if(done){ cl.textContent="받기"; cl.onclick=function(){ m.claimed=true; st.coins+=reward; logCoin(reward,"🎯 미션: "+label); sfx("coin"); save(); refreshTop(); renderMissions(); refreshHub(); toast("+"+reward+" 🪙"); }; } else { cl.textContent="진행 중"; cl.disabled=true; }
+      if(m.claimed){ cl.textContent="받음 ✓"; cl.disabled=true; } else if(done){ cl.textContent="받기"; cl.onclick=function(){ m.claimed=true; st.coins+=reward; logCoin(reward,"🎯 미션: "+label); sfx("coin"); save(); refreshTop(); renderMissions(); refreshHub(); toast("+"+comma(reward)+" 🪙"); }; } else { cl.textContent="진행 중"; cl.disabled=true; }
       el.querySelector(".ft").appendChild(cl); wrap.appendChild(el); });
     wrap.insertAdjacentHTML("beforeend",'<div class="sect">상시</div>');
     var attToday=(st.attDay===dayKey()), attReward=ATT_TABLE[Math.min(Math.max(st.streak,1),ATT_TABLE.length)-1];
     var att=document.createElement("div"); att.className="mfixed";
-    att.innerHTML='<span class="mi">🔥</span><div class="mb"><div class="mn">연속 출석 보너스</div><div class="md">'+(attToday?'오늘 받음 · 내일 또 와요!':(st.streak||1)+'일차 · 매일 출석 코인')+'</div></div><button'+(attToday?' disabled':'')+'>'+(attToday?'받음 ✓':'+'+attReward+' 🪙')+'</button>';
+    att.innerHTML='<span class="mi">🔥</span><div class="mb"><div class="mn">연속 출석 보너스</div><div class="md">'+(attToday?'오늘 받음 · 내일 또 와요!':(st.streak||1)+'일차 · 매일 출석 코인')+'</div></div><button'+(attToday?' disabled':'')+'>'+(attToday?'받음 ✓':'+'+comma(attReward)+' 🪙')+'</button>';
     att.querySelector("button").onclick=function(){ if(st.attDay===dayKey())return; touchStreak(); st.attDay=dayKey(); var rw=ATT_TABLE[Math.min(Math.max(st.streak,1),ATT_TABLE.length)-1]; st.coins+=rw; logCoin(rw,"🔥 출석 "+st.streak+"일차"); sfx("coin"); save(); refreshTop(); renderMissions(); refreshHub(); toast("🔥 출석 "+st.streak+"일차 +"+rw+" 🪙"); };
     wrap.appendChild(att);
     var inv=document.createElement("div"); inv.className="mfixed";
@@ -2490,7 +2509,7 @@
       cell.querySelector(".egn").textContent=got?e.name:"???"; cell.querySelector(".egh").textContent=got?("발견! +"+e.reward+"🪙"):e.hint; wrap.appendChild(cell); }); }
 
   /* ---------- character sheet ---------- */
-  function renderChar(){ $("charBal").textContent=st.coins; var c=charById(st.character), p=platById(st.platform), a=accById(st.accessory);
+  function renderChar(){ $("charBal").textContent=comma(st.coins); var c=charById(st.character), p=platById(st.platform), a=accById(st.accessory);
     $("charTitle").textContent="🐾 "+(st.name||"익명")+"님의 펫";
     var _cb=$("codexBtn"); if(_cb)_cb.textContent="📖 시너지 도감 ("+(st.setsFound||[]).length+"/"+SETS.length+")";
     var _bb=$("badgeBtn"); if(_bb)_bb.textContent="🎖 유저 뱃지 ("+(st.badges||[]).length+"/"+BADGES.length+")";
