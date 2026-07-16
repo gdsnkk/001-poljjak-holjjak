@@ -554,7 +554,7 @@
 
 <!-- cashout confirm -->
 <div class="ov" id="cashOv" hidden><div class="card" style="text-align:center"><div class="kick">🏦 그만하기</div><div class="rnote" id="cashMsg"></div><div class="btn-row"><button class="btn" id="cashYes">받고 끝내기</button><button class="btn ghost" id="cashNo">계속하기</button></div></div></div>
-<div class="ov" id="dailyIntroOv" hidden><div class="card"><div class="kick">🗓️ 오늘의 도전</div><p class="lede">아이템 없이 <b>순수 운(運)</b>으로 얼마나 멀리 가는지!<br>매 판 오늘의 운세·행운 정보를 하나씩 (하루 5개).</p><div id="dailyReveals" style="display:flex;flex-direction:column;gap:6px;margin:4px 0 2px"></div><div style="display:flex;flex-direction:column;gap:8px"><button class="btn" id="dailyStartBtn">시작! ▶</button><button class="btn ghost" id="dailyIntroClose">닫기</button></div></div></div>
+<div class="ov" id="dailyIntroOv" hidden><div class="card"><div class="kick">🗓️ 오늘의 도전</div><p class="lede">아이템 없이 <b>순수 운</b>으로 얼마나 멀리 가는지!<br>매 판 오늘의 운세·행운 정보를 하나씩 (하루 5개).</p><div id="dailyReveals" style="display:flex;flex-direction:column;gap:6px;margin:4px 0 2px"></div><div style="display:flex;flex-direction:column;gap:8px"><button class="btn" id="dailyStartBtn">시작! ▶</button><button class="btn ghost" id="dailyIntroClose">닫기</button></div></div></div>
 
 <!-- friends / team -->
 <div class="ov" id="friendsOv" hidden><div class="card"><div class="mhead"><h2>👥 친구 · 팀</h2></div><div id="friendsBody" style="display:flex;flex-direction:column;gap:8px"></div><button class="btn ghost" id="friendsClose">닫기</button></div></div>
@@ -751,7 +751,7 @@
   var APP_VERSION = "0.9.1";
   var WELCOME_HTML = "<ul><li>🗓️ <b>오늘의 도전</b> · ♾️ <b>엔드리스</b> 카드를 눌러 플레이!</li><li>징검다리에서 <b>좌/우</b>를 골라 멀리 건너요 — 매 칸 50:50 운!</li><li>🐾 <b>펫</b>·🛍 <b>상점</b>에서 펫·발판·악세를 모아 능력치를 키워요.</li><li>🏆 <b>랭킹</b>·🎯 <b>미션</b>·👥 <b>팀/친구</b>로 매일매일 즐겨요.</li><li>홈의 🗺️ <b>여정</b> 바로 얼마나 멀리 왔는지 확인!</li></ul>";
   var WHATSNEW_HTML = "<ul><li>🎵 <b>배경음악</b> 추가 — 설정에서 켜기</li><li>🪙 <b>코인 내역</b> · 🔔 랭킹 정산 <b>알림</b></li><li>🎖 <b>유저 뱃지</b>로 펫 스탯 강화 · 도감 확장</li><li>✊ <b>부활 미니게임</b> 6종 · 발판 새 모양</li></ul>";
-  var TERMS = "제1조(목적) 본 약관은 '폴짝홀짝'(이하 '서비스')의 이용 조건·절차와 운영자·이용자의 권리·의무를 규정합니다.<br><br>제2조(서비스) 운(運) 기반 캐주얼 게임으로 랭킹·친구/팀·상점·뽑기·출석/미션 등을 제공합니다.<br><br>제3조(계정) 이용자는 소셜 로그인으로 계정을 생성하며, 계정 관리 책임은 이용자에게 있습니다.<br><br>제4조(재화 '코인') 코인은 서비스 내에서만 쓰이는 재화로 <b>현금 가치가 없고 환급되지 않습니다.</b> 소비된 코인·소모성 아이템은 원칙적으로 환불되지 않습니다. 뽑기의 등급별 확률은 서비스 내에 고지합니다.<br><br>제5조(유료 결제) 결제는 App Store/Google Play를 통해 이루어지며, 환불·청약철회는 관련 법령과 각 스토어 정책에 따릅니다. 이미 사용한 디지털 콘텐츠는 청약철회가 제한될 수 있습니다.<br><br>제6조(금지행위) 변조·매크로·버그 악용 등 비정상적 재화/기록 취득, 부적절한 닉네임, 운영 방해를 금지합니다.<br><br>제7조(회원 탈퇴·데이터 삭제) 설정에서 언제든 탈퇴할 수 있습니다. 탈퇴 시 데이터는 즉시 삭제되지 않고 <b>탈퇴일부터 30일간 보관</b>되며, 이 기간 내 다시 로그인하면 탈퇴가 자동 철회되어 데이터가 복구됩니다. 30일간 재로그인이 없으면 자동으로 영구 삭제됩니다.<br><br>제8조(책임의 한계) 서비스는 '있는 그대로' 제공되며 게임의 승패·기록은 확률·운에 따릅니다.<br><br>제9조(약관 변경) 법령·서비스 변경에 따라 개정될 수 있으며 변경 시 서비스 내 공지합니다.<br><br>제10조(준거법) 대한민국 법을 준거법으로 합니다.<br><br>※ 본 약관은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
+  var TERMS = "제1조(목적) 본 약관은 '폴짝홀짝'(이하 '서비스')의 이용 조건·절차와 운영자·이용자의 권리·의무를 규정합니다.<br><br>제2조(서비스) 운 기반 캐주얼 게임으로 랭킹·친구/팀·상점·뽑기·출석/미션 등을 제공합니다.<br><br>제3조(계정) 이용자는 소셜 로그인으로 계정을 생성하며, 계정 관리 책임은 이용자에게 있습니다.<br><br>제4조(재화 '코인') 코인은 서비스 내에서만 쓰이는 재화로 <b>현금 가치가 없고 환급되지 않습니다.</b> 소비된 코인·소모성 아이템은 원칙적으로 환불되지 않습니다. 뽑기의 등급별 확률은 서비스 내에 고지합니다.<br><br>제5조(유료 결제) 결제는 App Store/Google Play를 통해 이루어지며, 환불·청약철회는 관련 법령과 각 스토어 정책에 따릅니다. 이미 사용한 디지털 콘텐츠는 청약철회가 제한될 수 있습니다.<br><br>제6조(금지행위) 변조·매크로·버그 악용 등 비정상적 재화/기록 취득, 부적절한 닉네임, 운영 방해를 금지합니다.<br><br>제7조(회원 탈퇴·데이터 삭제) 설정에서 언제든 탈퇴할 수 있습니다. 탈퇴 시 데이터는 즉시 삭제되지 않고 <b>탈퇴일부터 30일간 보관</b>되며, 이 기간 내 다시 로그인하면 탈퇴가 자동 철회되어 데이터가 복구됩니다. 30일간 재로그인이 없으면 자동으로 영구 삭제됩니다.<br><br>제8조(책임의 한계) 서비스는 '있는 그대로' 제공되며 게임의 승패·기록은 확률·운에 따릅니다.<br><br>제9조(약관 변경) 법령·서비스 변경에 따라 개정될 수 있으며 변경 시 서비스 내 공지합니다.<br><br>제10조(준거법) 대한민국 법을 준거법으로 합니다.<br><br>※ 본 약관은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
   var PRIVACY = "'폴짝홀짝'(이하 '서비스')는 관련 법령을 준수하여 이용자의 개인정보를 보호합니다.<br><br><b>1. 수집 항목</b><br>· 계정: 소셜 로그인 식별자, 이메일, 닉네임<br>· 게임 이용: 플레이 기록·점수·랭킹, 보유/구매 코인, 친구·팀 정보<br>· 결제: 인앱결제 내역(카드정보는 Apple/Google이 처리, 운영자 미저장)<br>· 광고·기기: 광고 식별자, 기기·OS, IP<br><br><b>2. 이용 목적</b><br>회원 식별·계정 관리, 랭킹·친구·팀 기능, 코인 지급·구매·부정이용 방지, 광고 게재·통계, 문의 대응·공지.<br><br><b>3. 보유 기간</b><br>목적 달성 시까지 보유 후 파기. <b>회원 탈퇴 시 탈퇴일부터 30일간 보관</b>하며, 30일 내 재로그인 시 복구, 미접속 시 자동 영구 삭제됩니다. 결제·거래 기록은 법령에 따라 5년 보관될 수 있습니다.<br><br><b>4. 처리위탁</b><br>Supabase(데이터 저장·인증), Google AdMob(광고), Apple/Google(결제). 각 사업자의 방침을 따릅니다.<br><br><b>5. 광고·추적</b><br>Google AdMob 광고를 게재하며 맞춤형 광고에 광고 식별자를 사용할 수 있습니다. iOS는 ATT 동의를 요청하며 거부 시 비맞춤형 광고가 제공됩니다.<br><br><b>6. 이용자 권리</b><br>열람·정정·삭제·처리정지 및 회원 탈퇴를 언제든 요청할 수 있습니다.<br><br><b>7. 아동</b><br>만 14세 미만은 법정대리인 동의 없이 가입할 수 없습니다.<br><br><b>8. 문의</b><br>studio.gdsnkk@gmail.com<br><br>※ 본 방침은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
 
   /* ---------- pixel art data ---------- */
@@ -1024,7 +1024,7 @@
   // 서버 동기화용 상태 화이트리스트(코인·닉·보유템·기기설정 제외 — 그건 따로/로컬).
   var PJ_STATE_KEYS=["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal","setsFound","eggsFound","secretSeen","badges","charLevels","charExp","boosters","blesses","doubles","sures","character","platform","accessory"];
   // 가변형(더 최신 것 채택 = serverNewer일 때만): 연속방문·출석·오늘의도전·미션 상태
-  var PJ_MUT_EXTRA=["streak","attDay","dailyPending","dailySettledDay","lastDailyRank","daily","missions","adDay","adCount","dailyBoard","weeklyBoard","monthlyBoard"];
+  var PJ_MUT_EXTRA=["streak","attDay","dailyPending","dailySettledDay","lastDailyRank","daily","missions","adDay","adCount","dailyBoard","weeklyBoard","monthlyBoard","friends","teams","teamName","teamHost","friendCode"];
   window.PJ_GETSTATE=function(){ var o={}; PJ_STATE_KEYS.concat(PJ_MUT_EXTRA).forEach(function(k){ o[k]=st[k]; }); o.dailyRecord=st.dailyRecord; try{ o._board=loadBoard(); }catch(e){} return o; };
   window.PJ_APPLYSTATE=function(s, serverNewer){ if(!s||typeof s!=="object")return; var ch=false;
     ["totalDist","journeyLevel","totalPlays","coinsEarned","gachaTotal"].forEach(function(k){ if(typeof s[k]==="number"&&s[k]>(st[k]||0)){ st[k]=s[k]; ch=true; } });
@@ -2622,7 +2622,7 @@
   $("cashoutBtn").onclick=function(){ if(mode!=="endless"||!playing||busy||floor<1)return; $("cashMsg").innerHTML='여기서 그만하고 상금 <b style="color:var(--gold2)">🪙'+runPot+'</b> 받을까요?'; show("cashOv"); };
   $("cashYes").onclick=function(){ hide("cashOv"); cashOut(); };
   $("cashNo").onclick=function(){ hide("cashOv"); };
-  $("dailyCard").onclick=function(){ if(st.dailyPending){ var r=st.dailyPending; st.coins+=r.reward; logCoin(r.reward,"🏅 오늘의 도전 "+r.rank+"등"); st.dailyPending=null; save(); refreshTop(); refreshHub(); fireConfetti(); toast("🏆 어제 "+r.rank+"등 보너스 +"+r.reward+" 🪙"); return; } ensureDaily(); showDailyIntro(); };
+  $("dailyCard").onclick=function(){ if(st.dailyPending){ var r=st.dailyPending; st.coins+=r.reward; logCoin(r.reward,"🏅 데일리 랭킹 "+r.rank+"등 보너스"); st.dailyPending=null; save(); refreshTop(); refreshHub(); fireConfetti(); toast("🏆 어제 "+r.rank+"등 보너스 +"+comma(r.reward)+" 🪙"); return; } ensureDaily(); showDailyIntro(); };
   function showDailyIntro(){ var L=$("dailyReveals"); if(L){ var rv=st.daily.reveals||[]; L.innerHTML=rv.length?rv.map(function(r){ return '<div class="fortune" style="margin:0">'+fortuneHTML(r)+'</div>'; }).join(""):'<div class="lede" style="font-size:11.5px;opacity:.8">한 판씩 도전하면 오늘의 운세·행운 정보가 하나씩 열려요 (하루 5개)</div>'; } show("dailyIntroOv"); }
   $("dailyStartBtn").onclick=function(){ hide("dailyIntroOv"); startRun("daily"); };
   $("dailyIntroClose").onclick=function(){ hide("dailyIntroOv"); };
@@ -2753,16 +2753,102 @@
     else { setBubble(); } };
   $("heroCanvas").style.cursor="pointer";
   document.addEventListener("pointerdown", function _bgm(){ startBGM(); document.removeEventListener("pointerdown", _bgm); }, {once:true});
+
+  // 로그인 화면: 발판 위를 게임 캐릭터들이 폴짝폴짝 지나감
+  // (로그인 마크업 #pjMasc는 이 스크립트보다 아래에 있으므로 DOM 로드 후 실행)
+  function pjLoginStage(){
+   try{
+    var cv=document.getElementById("pjMasc"); if(!cv || typeof drawChar!=="function") return;
+    var g=cv.getContext("2d"); g.imageSmoothingEnabled=false;
+    var W=cv.width, H=cv.height, groundY=H-9;
+    var pool=CHARACTERS.filter(function(c){ return !c.secret; });
+    for(var k=0;k<pool.length;k++){ if(pool[k].id==="chick"){ pool.unshift(pool.splice(k,1)[0]); break; } }  // 삐약이 먼저
+    var stone=(typeof platById==="function")?platById("stone"):null;
+    var BUB=["🍀","✨","💰","⭐","🎲","😊","💜","🎵","👀","❗","🐣","🎉"];
+    var N=4, walkers=[];
+    for(var i=0;i<N;i++){ walkers.push({ x:(i/N)*(W+24)-12, spd:0.16+(i%2)*0.03, ph:i*1.7, idx:i%pool.length, bub:null, bubT:0 }); }
+    function drawBubble(cx, topY, emo){
+      var bw=15, bh=13, bx=Math.round(cx-bw/2), by=Math.round(topY-bh);
+      g.fillStyle="#ffffff"; g.beginPath();
+      if(g.roundRect) g.roundRect(bx,by,bw,bh,3.5); else g.rect(bx,by,bw,bh);
+      g.fill();
+      g.beginPath(); g.moveTo(cx-2.5,by+bh-1); g.lineTo(cx+2.5,by+bh-1); g.lineTo(cx,by+bh+3); g.closePath(); g.fill();
+      g.textAlign="center"; g.textBaseline="middle"; g.font="9px -apple-system,'Apple SD Gothic Neo',sans-serif";
+      g.fillText(emo, cx, by+bh/2+0.5);
+    }
+    function frame(ts){
+      try{
+        var lg=document.getElementById("pjLogin");
+        if(lg && lg.style.display!=="none"){
+          g.clearRect(0,0,W,H);
+          if(stone && typeof drawStoneTop==="function"){ for(var sx=12; sx<=W-2; sx+=26){ drawStoneTop(g, stone, sx, groundY, false, 1); } }
+          walkers.forEach(function(w){
+            w.x += w.spd;
+            if(w.x > W+14){ w.x=-14; w.idx=(w.idx+N)%pool.length; w.bub=null; }   // 벗어나면 다음 캐릭터로
+            var hop=Math.abs(Math.sin(ts*0.005 + w.ph))*8, feetY=groundY-1-hop;
+            drawChar(g, pool[w.idx], w.x, feetY, false, "none");
+            if(!w.bub && Math.random()<0.003){ w.bub=BUB[Math.floor(Math.random()*BUB.length)]; w.bubT=ts+1500+Math.random()*1400; }  // 가끔 일부만
+            if(w.bub){ if(ts>w.bubT) w.bub=null; else drawBubble(w.x, feetY-16, w.bub); }
+          });
+        }
+        requestAnimationFrame(frame);
+      }catch(e){ requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+   }catch(e){}
+  }
+  // 로그인 오로라 배경: 그라디언트 + 오로라 글로우 + 별 반짝 + 행운 아이템 둥실 + 비네트
+  function pjLoginBg(){
+   try{
+    var cv=document.getElementById("pjBg"); if(!cv) return;
+    var g=cv.getContext("2d"), DPR=Math.min(2, window.devicePixelRatio||1);
+    var W=0,H=0, stars=[], motes=[], MOTE=["✨","🌙","⭐","🍀"];
+    var AUR=[["31,174,138",0.26],["63,106,224",0.20],["138,63,208",0.16]];
+    function newMote(init){ return { x:Math.random()*W, y:init?Math.random()*H:H+20, e:MOTE[Math.floor(Math.random()*MOTE.length)], sz:13+Math.random()*11, sp:0.15+Math.random()*0.3, sway:Math.random()*6.28, a:0.5+Math.random()*0.4 }; }
+    function resize(){ var lg=document.getElementById("pjLogin"); if(!lg)return; W=lg.clientWidth; H=lg.clientHeight; cv.width=W*DPR; cv.height=H*DPR; g.setTransform(DPR,0,0,DPR,0,0);
+      stars=[]; for(var i=0;i<44;i++) stars.push({x:Math.random()*W, y:Math.random()*H*0.7, r:Math.random()*1.5+0.4, p:Math.random()*6.28, s:0.6+Math.random()*1.3});
+      motes=[]; for(var j=0;j<7;j++) motes.push(newMote(true)); }
+    function frame(t){
+      try{
+        var lg=document.getElementById("pjLogin");
+        if(lg && lg.style.display!=="none" && W>0){
+          var grd=g.createLinearGradient(0,0,0,H); grd.addColorStop(0,"#123a4a"); grd.addColorStop(0.55,"#0f1740"); grd.addColorStop(1,"#080a1e"); g.fillStyle=grd; g.fillRect(0,0,W,H);
+          for(var i=0;i<AUR.length;i++){ var a=AUR[i], cx=W*(0.3+0.4*Math.sin(t*0.0002+i*2)), cy=H*(0.22+0.12*Math.cos(t*0.00017+i)), r=W*0.75;
+            var rg=g.createRadialGradient(cx,cy,0,cx,cy,r); rg.addColorStop(0,"rgba("+a[0]+","+a[1]+")"); rg.addColorStop(1,"rgba("+a[0]+",0)"); g.fillStyle=rg; g.fillRect(0,0,W,H); }
+          for(var s=0;s<stars.length;s++){ var st=stars[s], tw=0.4+0.6*Math.abs(Math.sin(t*0.001*st.s+st.p)); g.globalAlpha=tw; g.fillStyle="#d9fff0"; g.beginPath(); g.arc(st.x,st.y,st.r,0,7); g.fill(); }
+          g.globalAlpha=1; g.textAlign="center"; g.textBaseline="middle";
+          for(var m=0;m<motes.length;m++){ var mo=motes[m]; mo.y-=mo.sp; mo.x+=Math.sin(t*0.001+mo.sway)*0.2; if(mo.y<-24){ motes[m]=newMote(false); continue; }
+            g.globalAlpha=mo.a*(mo.y>H*0.72?(H-mo.y)/(H*0.28):1); g.font=mo.sz+"px sans-serif"; g.fillText(mo.e, mo.x, mo.y); }
+          g.globalAlpha=1;
+          var vg=g.createRadialGradient(W/2,H*0.34,H*0.2,W/2,H*0.34,H*0.78); vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.45)"); g.fillStyle=vg; g.fillRect(0,0,W,H);
+        }
+        requestAnimationFrame(frame);
+      }catch(e){ requestAnimationFrame(frame); }
+    }
+    resize(); window.addEventListener("resize", resize); requestAnimationFrame(frame);
+   }catch(e){}
+  }
+  function pjLoginInit(){ pjLoginBg(); pjLoginStage(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", pjLoginInit); else pjLoginInit();
 })();
 </script>
 
 <!-- ================= 서버 연동 (슬라이스 1) ================= -->
 <style>
-  #pjLogin{position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif;color:#f4eeff;background:radial-gradient(120% 75% at 50% 0%,#241a4d 0%,#130f2a 58%,#0b0818 100%);padding:calc(46px + env(safe-area-inset-top,0px)) 26px calc(30px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+  #pjLogin{position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif;color:#f4eeff;background:linear-gradient(#123a4a 0%,#0f1740 55%,#080a1e 100%);padding:calc(46px + env(safe-area-inset-top,0px)) 26px calc(30px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+  #pjBg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+  #pjLogin .pjhero,#pjLogin .pjauth{position:relative;z-index:1}
   #pjLB{position:fixed;inset:0;z-index:9000;background:rgba(10,8,22,.96);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;font-family:"Apple SD Gothic Neo",-apple-system,sans-serif}
   #pjLogin .pjhero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
-  #pjLogin .pjmasc{font-size:74px;line-height:1;filter:drop-shadow(0 6px 0 rgba(0,0,0,.3))}
-  #pjLogin .pjname{font-size:34px;font-weight:900;letter-spacing:-.5px;color:#ffe58a;text-shadow:0 2px 0 #6b4e00;margin:0}
+  #pjLogin .pjmasc{line-height:1;filter:drop-shadow(0 5px 0 rgba(0,0,0,.28));transition:opacity .28s ease, transform .28s ease}
+  #pjLogin .pjname{
+    font-size:clamp(48px,16vw,66px); font-weight:900; letter-spacing:-1.5px; line-height:1; margin:8px 0 4px; color:#ffd23e;
+    text-shadow:
+      -2px -2px 0 #5a3610, 2px -2px 0 #5a3610, -2px 2px 0 #5a3610, 2px 2px 0 #5a3610,
+      0 -2px 0 #5a3610, 0 2px 0 #5a3610, -2px 0 0 #5a3610, 2px 0 0 #5a3610,
+      0 4px 0 #7a4d16, 0 6px 0 #5c390d, 0 8px 0 #46280a,
+      0 12px 10px rgba(0,0,0,.55);
+  }
   #pjLogin .pjtag{font-size:13.5px;color:#a99ed6;line-height:1.55;max-width:290px;margin:0}
   #pjLogin .pjauth{width:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
   #pjLogin .pjauth .pjbtn{margin-top:0}
@@ -2783,12 +2869,14 @@
   .pjrk{color:#a99ed6;width:26px;display:inline-block}.pjsc{color:#ffe58a;font-weight:800}
 </style>
 <div id="pjLogin">
+  <canvas id="pjBg"></canvas>
   <div class="pjhero">
-    <div class="pjmasc">🐸</div>
+    <canvas class="pjmasc" id="pjMasc" width="132" height="60" style="width:264px;height:120px;image-rendering:pixelated"></canvas>
     <h1 class="pjname">폴짝홀짝</h1>
-    <p class="pjtag">운(運)으로 징검다리 폴짝!<br>로그인하면 기록이 저장되고,<br>기기를 바꿔도 그대로 복원돼요.</p>
+    <p class="pjtag">운으로 징검다리 폴짝!</p>
   </div>
   <div class="pjauth">
+    <button class="pjbtn kakao" id="pjKakao">카카오로 시작</button>
     <button class="pjbtn google" id="pjGoogle">Google로 시작</button>
     <button class="pjbtn apple" id="pjApple"> Apple로 시작</button>
     <div class="pjerr" id="pjErr"></div>
@@ -2811,13 +2899,17 @@
 (function(){
   var URL="https://sjnhitjxohrievxjywpv.supabase.co", KEY="sb_publishable_3yUqWENtiUeBjLD90BguDg_A0wpfKEN";
   if(!window.supabase){ document.getElementById("pjLogin").innerHTML="<div class='pjcard'>Supabase 로드 실패 — 인터넷 확인</div>"; return; }
-  var sb=window.supabase.createClient(URL,KEY); window.PJ_SB=sb;
+  var sb=window.supabase.createClient(URL,KEY,{auth:{flowType:'implicit',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}}); window.PJ_SB=sb;
   var $=function(id){return document.getElementById(id);};
+  // 네이티브(Capacitor) 감지 + 플러그인
+  var CAP=window.Capacitor, IS_NATIVE=!!(CAP && CAP.isNativePlatform && CAP.isNativePlatform());
+  var CapApp=(IS_NATIVE && CAP.Plugins)?CAP.Plugins.App:null, CapBrowser=(IS_NATIVE && CAP.Plugins)?CAP.Plugins.Browser:null;
+  var NATIVE_REDIRECT="com.gdsnkk.poljjakholjjak://login-callback";
   function gameName(){ try{ var raw=localStorage.getItem("poljjak_state_v1"); return raw?(JSON.parse(raw).name||"").trim().slice(0,8):""; }catch(e){ return ""; } }
   window.PJ_SUBMIT=function(mode,floor,prob,combo,outcome,reward){ (async function(){ try{ var nm=gameName(); if(nm){ var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); } var r=await sb.rpc('submit_run',{p_mode:mode,p_floor:floor,p_prob:prob,p_combo:combo,p_outcome:outcome,p_reward:(typeof reward==="number"&&isFinite(reward)?Math.round(reward):null)}); if(r&&r.data&&r.data.coins!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data.coins)); }catch(e){} })(); };
   window.PJ_SPEND=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('spend_coins',{p_amount:amount,p_reason:reason||'구매'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
   window.PJ_EARN=function(amount,reason){ (async function(){ try{ var r=await sb.rpc('earn_coins',{p_amount:amount,p_reason:reason||'보상'}); if(r&&r.data!=null&&window.PJ_SETCOINS) PJ_SETCOINS(Number(r.data)); }catch(e){} })(); };
-  window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };
+  window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };  /* 로컬 데이터도 비워서 계정 전환 시 이전 진행상황이 안 섞이게 */
   // 탈퇴 요청: 서버에 deleted_at 마킹(30일 유예) → 로컬 비우고 로그아웃. 30일 내 재로그인 시 자동 복구.
   window.PJ_REQUEST_DELETION=function(){ (async function(){ try{ await sb.rpc('request_deletion'); }catch(e){} try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} sb.auth.signOut().then(function(){ location.reload(); }); })(); };
   function loggedIn(){ window.PJ_AUTHED=true; $("pjLogin").style.display="none"; sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){}); pullProfile(); }
@@ -2873,8 +2965,45 @@
   setInterval(pushState, 20000);
   $("pjLoginBtn").onclick=function(){ $("pjErr").textContent="…"; sb.auth.signInWithPassword({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ r.error?$("pjErr").textContent=r.error.message:loggedIn(); }); };
   $("pjSignupBtn").onclick=function(){ sb.auth.signUp({email:$("pjEmail").value.trim(),password:$("pjPw").value}).then(function(r){ $("pjErr").textContent=r.error?r.error.message:"계정 생성! 이제 로그인 하세요"; }); };
-  // 소셜 로그인(OAuth): 프로바이더로 이동 → 돌아오면 세션 생성 → onAuthStateChange가 loggedIn 호출.
-  function pjOAuth(provider){ $("pjErr").textContent="이동 중…"; sb.auth.signInWithOAuth({provider:provider, options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){ if(r.error)$("pjErr").textContent=r.error.message; }); }
+  // 소셜 로그인(OAuth). 웹=리다이렉트, 네이티브=시스템브라우저로 열고 커스텀스킴 딥링크로 복귀.
+  function pjOAuth(provider){
+    $("pjErr").textContent="이동 중…";
+    var scopes=(provider==="kakao")?"profile_nickname":undefined;   // 카카오: 닉네임만(이메일 미요청 — Supabase는 이메일없이 허용 설정)
+    if(IS_NATIVE){
+      var o={ redirectTo:NATIVE_REDIRECT, skipBrowserRedirect:true }; if(scopes)o.scopes=scopes;
+      sb.auth.signInWithOAuth({ provider:provider, options:o })
+        .then(function(r){ if(r.error){ $("pjErr").textContent=r.error.message; return; }
+          if(r.data && r.data.url && CapBrowser){ CapBrowser.open({ url:r.data.url, presentationStyle:"popover" }); }
+          else if(r.data && r.data.url){ window.location.href=r.data.url; }
+        });
+    } else {
+      var o2={ redirectTo:window.location.origin+window.location.pathname }; if(scopes)o2.scopes=scopes;
+      sb.auth.signInWithOAuth({ provider:provider, options:o2 })
+        .then(function(r){ if(r.error)$("pjErr").textContent=r.error.message; });
+    }
+  }
+  // 네이티브: OAuth 후 커스텀스킴으로 돌아오면 세션 완성
+  if(IS_NATIVE && CapApp){
+    CapApp.addListener("appUrlOpen", function(ev){
+      try{
+        if(CapBrowser) CapBrowser.close();
+        var url=(ev && ev.url)||"";
+        if(url.indexOf("login-callback")<0) return;
+        var codeM=url.match(/[?&]code=([^&]+)/);
+        if(codeM){
+          $("pjErr").textContent="로그인 중…";
+          sb.auth.exchangeCodeForSession(decodeURIComponent(codeM[1])).then(function(r){ if(r.error){ $("pjErr").textContent=r.error.message; } else { loggedIn(); } });
+        } else if(url.indexOf("access_token=")>=0){
+          var hash=url.substring(url.indexOf("#")+1), p=new URLSearchParams(hash);
+          var at=p.get("access_token"), rt=p.get("refresh_token");
+          if(at&&rt){ $("pjErr").textContent="로그인 중…"; sb.auth.setSession({access_token:at, refresh_token:rt}).then(function(r){ if(r.error){ $("pjErr").textContent=r.error.message; } else { loggedIn(); } }); }
+        } else {
+          var errM=url.match(/[?&]error_description=([^&]+)/); if(errM) $("pjErr").textContent=decodeURIComponent(errM[1].replace(/\+/g," "));
+        }
+      }catch(e){ $("pjErr").textContent="로그인 처리 오류"; }
+    });
+  }
+  $("pjKakao").onclick=function(){ pjOAuth("kakao"); };
   $("pjGoogle").onclick=function(){ pjOAuth("google"); };
   $("pjApple").onclick=function(){ pjOAuth("apple"); };
   $("pjEmailToggle").onclick=function(){ var b=$("pjEmailBox"); b.style.display=(b.style.display==="none")?"flex":"none"; };
