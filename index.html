@@ -48,6 +48,11 @@
 
   /* HUB */
   .hero { text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; margin-top:2px; }
+  .charstrip { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-end; max-width:100%; margin-top:5px; padding:0 4px; }
+  .charstrip canvas { width:34px; height:34px; image-rendering:pixelated; margin-left:-8px; cursor:pointer; transition:transform .12s; }
+  .charstrip canvas:first-child { margin-left:0; }
+  .charstrip canvas:hover { transform:translateY(-3px); position:relative; z-index:5; }
+  .charstrip canvas.on { transform:translateY(-4px) scale(1.12); position:relative; z-index:4; filter:drop-shadow(1px 0 0 var(--gold)) drop-shadow(-1px 0 0 var(--gold)) drop-shadow(0 1px 0 var(--gold)) drop-shadow(0 -1px 0 var(--gold)); }
   .hero h1 { margin-bottom:8px; }
   .clevel { font-size:15px; font-weight:800; margin-top:2px; } .clevel .lvtag { color:var(--gold2); } .clevel .lvstars { color:var(--gold); letter-spacing:1px; }
   .lvrow { display:flex; justify-content:space-between; align-items:center; gap:8px; }
@@ -547,6 +552,7 @@
       <div class="herosyn" id="heroSyn" style="display:none"></div>
       <div class="who" id="whoBtn"><b id="whoName">익명</b></div>
       <div class="inv" id="inv"></div>
+      <div class="charstrip" id="charStrip"></div>
     </div>
     <div class="playcue">👇 아래를 <b>눌러서</b> 플레이!</div>
     <button class="mode-card" id="dailyCard"><span class="ic" style="font-size:30px">🗓️</span><span class="b"><span class="t">오늘의 도전</span><span class="d" id="dailyDesc">50:50! 오늘 나의 운세는?</span></span><span class="meta" id="dailyMeta"></span><span class="go">▶</span></button>
@@ -716,8 +722,9 @@
   ];
   function placeFor(m){ var p=PLACES[0]; for(var i=0;i<PLACES.length;i++){ if(m>=PLACES[i].d) p=PLACES[i]; else break; } return p; }
   function renderJourneyMap(){
-    var jrows=[["🗺️","총 이동 거리",fmtM(st.totalDist),topPct(st.totalDist,1500)],["🎮","총 플레이",(st.totalPlays||0)+"판",topPct(st.totalPlays,40)],["🎰","랜덤 뽑기",(st.gachaTotal||0)+"회",topPct(st.gachaTotal,15)],["🪙","누적 획득 코인",(st.coinsEarned||0).toLocaleString(),topPct(st.coinsEarned,3000)]];
-    var jh='<div class="jstats">'; jrows.forEach(function(r){ jh+='<div class="jstat"><span class="jsi">'+r[0]+'</span><span class="jsl">'+r[1]+'</span><b class="jsv">'+r[2]+'</b><span class="jsp">상위 '+r[3]+'%</span></div>'; }); jh+='</div><p class="lede" style="font-size:10.5px;text-align:center;margin:10px 0 8px">여정 <b>Lv.'+st.journeyLevel+'</b> · 50칸마다 +50🪙 · 상위 %는 재미로 보는 추정치예요</p>';
+    var jp=window.PJ_JPCT||{};   // 서버 실제 순위(있으면), 없으면 추정치 폴백
+    var jrows=[["🗺️","총 이동 거리",fmtM(st.totalDist),jp.dist!=null?jp.dist:topPct(st.totalDist,1500)],["🎮","총 플레이",(st.totalPlays||0)+"판",jp.plays!=null?jp.plays:topPct(st.totalPlays,40)],["🎰","랜덤 뽑기",(st.gachaTotal||0)+"회",jp.gacha!=null?jp.gacha:topPct(st.gachaTotal,15)],["🪙","누적 획득 코인",(st.coinsEarned||0).toLocaleString(),jp.earned!=null?jp.earned:topPct(st.coinsEarned,3000)]];
+    var jh='<div class="jstats">'; jrows.forEach(function(r){ jh+='<div class="jstat"><span class="jsi">'+r[0]+'</span><span class="jsl">'+r[1]+'</span><b class="jsv">'+r[2]+'</b><span class="jsp">상위 '+r[3]+'%</span></div>'; }); jh+='</div><p class="lede" style="font-size:10.5px;text-align:center;margin:10px 0 8px">여정 <b>Lv.'+st.journeyLevel+'</b> · 50칸마다 +50🪙 · '+(window.PJ_JPCT?('전국 '+((window.PJ_JPCT.total||0).toLocaleString())+'명 중 실제 순위예요'):'상위 %는 재미로 보는 추정치예요')+'</p>';
     $("journeyHead").innerHTML=jh;
     var host=$("journeyList"); host.innerHTML="";
     host.style.cssText="max-height:40vh;overflow-y:auto;overflow-x:hidden;border:2px solid var(--line);background:#0e1430;margin-top:2px";
@@ -2546,11 +2553,19 @@
     $("heroStars").innerHTML='<span class="lvstars">'+stars(charLevel(st.character))+'</span>';
     var into=st.totalDist%MILE, jpct=Math.round(into/MILE*100), pl=placeFor(st.totalDist);
     $("journey").innerHTML='<div class="jt"><span>🗺️ 여정 <b>Lv.'+st.journeyLevel+'</b></span><span>서울시청에서 '+fmtM(st.totalDist)+'</span></div><div class="jbar"><span style="width:'+jpct+'%"></span></div><div class="jplace">📍 지금 <b>'+pl.n+'</b> 쯤! (다음 레벨까지 '+(MILE-into)+'칸)</div>';
-    applyTheme(); drawHero(); refreshTop(); checkPassiveEggs(); checkBadges(); checkRankDrop(); if(typeof refreshInviteDot==="function")refreshInviteDot(); }
+    applyTheme(); drawHero(); renderCharStrip(); refreshTop(); checkPassiveEggs(); checkBadges(); checkRankDrop(); if(typeof refreshInviteDot==="function")refreshInviteDot(); }
   function applyTheme(){ var e=platEnv(platById(st.platform)); document.body.style.background='linear-gradient(180deg,'+e.top+' 0%,'+e.bot+' 30%,#141026 78%)'; document.body.style.backgroundAttachment='fixed'; }
   function drawHero(){ var cv=$("heroCanvas"), x=cv.getContext("2d"); x.setTransform(2,0,0,2,0,0); x.imageSmoothingEnabled=false; var W=44,H=48; x.clearRect(0,0,W,H);
     drawStoneTop(x,platById(st.platform),W/2,H-11,false,1);
     drawChar(x,charById(st.character),W/2,H-13,false); updateHeroSyn(); }
+  function renderCharStrip(){ var el=$("charStrip"); if(!el||typeof drawChar!=="function")return; el.innerHTML="";
+    var owned=(st.owned&&st.owned.character)||["chick"];
+    CHARACTERS.forEach(function(c){ if(owned.indexOf(c.id)<0)return;   // 보유한 캐릭터만, CHARACTERS 순서로
+      var cv=document.createElement("canvas"); cv.width=48; cv.height=48; if(c.id===st.character)cv.className="on";
+      var x=cv.getContext("2d"); x.setTransform(2,0,0,2,0,0); x.imageSmoothingEnabled=false; drawChar(x,c,12,21,false,"none",charLevel(c.id));
+      cv.title=c.name;
+      cv.onclick=function(){ if(st.character===c.id)return; st.character=c.id; save(); if(window.PJ_PUSHNOW)PJ_PUSHNOW(); checkSet(); drawHero(); if(typeof applyTheme==="function")applyTheme(); renderCharStrip(); if(typeof renderChar==="function")renderChar(); sfx("hop"); vibrate(10); toast(c.name+" 착용!"); };
+      el.appendChild(cv); }); }
   function updateHeroSyn(){ var s=activeSet(), hs=$("heroSyn"), hc=$("heroCanvas"); if(hs){ if(s){ hs.textContent="✨ "+s.name+" 시너지!"; hs.style.display=""; } else hs.style.display="none"; } if(hc) hc.classList.toggle("synglow", !!s); }
   var heroBlinkEnd=0, heroBlinkNext=0, heroGaze=0, heroGazeNext=0, heroReactEnd=0;
   function heroFrame(ts){
@@ -3117,7 +3132,8 @@
   $("gachaClose").onclick=function(){ hide("gachaOv"); refreshHub(); };
   $("luckyOk").onclick=function(){ hide("luckyOv"); };
   $("missionBtn").onclick=function(){ renderMissions(); show("missionOv"); };
-  $("journey").onclick=function(){ show("journeyOv"); renderJourneyMap(); };
+  $("journey").onclick=function(){ show("journeyOv"); renderJourneyMap();   // 추정치로 즉시 표시 후 서버 실제순위로 갱신
+    if(window.PJ_SB){ window.PJ_SB.rpc('journey_percentiles',{p_dist:st.totalDist||0,p_plays:st.totalPlays||0,p_gacha:st.gachaTotal||0,p_earned:st.coinsEarned||0}).then(function(r){ if(r&&r.data){ window.PJ_JPCT=r.data; renderJourneyMap(); } },function(){}); } };
   $("journeyClose").onclick=function(){ hide("journeyOv"); };
   $("rankBtn").onclick=function(){ renderLB(); show("rankOv"); };
   $("rankClose").onclick=function(){ hide("rankOv"); };
