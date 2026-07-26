@@ -1807,6 +1807,7 @@
       else if(shieldReady){ shieldReady=false; runUsedTube=true; survived=true; game.savedBy="tube"; renderLoadout(); }
     }
     game.survived=survived;
+    if(mode==="endless"){ currentSafe = survived ? side : (side==="L"?"R":"L"); game.safe=currentSafe; }   // 엔드리스: 안전발판=성공하면 내 선택(행운 세이프 시 히스토리 일관성 · 순수운 daily는 예정값 유지)
     runDoors++; if(side==="L")runLeft++; runPath+=currentSafe; pushHist(currentSafe);
     updateEcon(); updateProb();
     setPhase("anticipate");
@@ -2477,7 +2478,7 @@
     if(nf.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
         el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); }); }
-    var ann=window.PJ_ANN||[];
+    var ann=Array.isArray(window.PJ_ANN)?window.PJ_ANN:[];   // 배열 아니면 [] 로 (filter 터짐 방지)
     function annRow(n){ var img=n.image_url?('<img src="'+n.image_url+'" alt="" style="width:100%;border-radius:8px;margin-top:8px;display:block">'):''; ntcRow(L, n.title||"", String(n.created_at||"").slice(0,10), String(n.body||"").replace(/\n/g,"<br>")+img); }
     var notices=ann.filter(function(n){return n.kind!=="update";}), updates=ann.filter(function(n){return n.kind==="update";});
     if(notices.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📢 공지사항</div>'); notices.forEach(annRow); }
