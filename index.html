@@ -282,7 +282,7 @@
   @keyframes giftpop { 0%{transform:scale(.6);opacity:.4} 55%{transform:scale(1.5)} 100%{transform:scale(1)} }
   #giftBoxIcon.pop { animation:giftpop .4s ease-out; }
   .cos.eq { border-color:var(--gold); box-shadow:0 0 9px rgba(255,210,62,.55); }
-  .cos canvas { width:auto; height:50px; image-rendering:pixelated; display:block; margin:0 auto; background:#12102a; }
+  .cos canvas { width:auto; height:50px; image-rendering:pixelated; display:block; margin:0 auto; background:transparent; }
   .cos .accem { width:100%; height:50px; display:grid; place-items:center; font-size:30px; background:transparent; }
   .cbox .accem { width:100%; height:62px; display:grid; place-items:center; font-size:34px; background:#12102a; }
   .cos .skyp { width:100%; height:44px; border:1px solid var(--line); }
@@ -2678,7 +2678,7 @@
             lvHtml='<div class="lvwrap"><div class="lvbadge">Lv.'+_lv+'</div><div class="lvgauge"><i style="width:'+_pct+'%"></i></div><div class="lvnum">'+Math.min(_xp,_need)+'/'+_need+(_rdy?' <span class="up">▲</span>':'')+'</div></div>'; } }
         cell.innerHTML=prev+'<div class="cn">'+it.name+' '+rchip(it)+'</div><div class="cst">'+statTxt(it)+'</div>'+lvHtml;
         if(!(cat.kind==="acc"&&it.id==="none")){ var cv=cell.querySelector("canvas"), cxx=cv.getContext("2d"); cxx.imageSmoothingEnabled=false;
-          if(cat.kind==="char"){ cxx.setTransform(2,0,0,2,0,0); drawChar(cxx,it,cw/2,chh-5,false,"none"); } else if(cat.kind==="acc"){ cv.style.height="60px"; cv.style.background="transparent"; drawAccIcon(cxx,it.id); } else drawStoneTop(cxx,it,28,22,false,1); }
+          if(cat.kind==="char"){ cxx.setTransform(2,0,0,2,0,0); drawChar(cxx,it,cw/2,chh-5,false,"none"); } else if(cat.kind==="acc"){ cv.style.height="60px"; drawAccIcon(cxx,it.id); } else drawStoneTop(cxx,it,28,22,false,1); }
         var btn=document.createElement("button");
         if(it.secret && !owned){ btn.className="buy"; btn.textContent="🎰 뽑기 전용"; btn.disabled=true; }
         else if(!owned){ btn.className="buy"; btn.textContent="🪙"+comma(pr); btn.disabled=st.coins<pr; btn.onclick=function(){ if(st.coins<pr)return;
@@ -3007,11 +3007,16 @@
   function initAds(){ if(!_AdMob || _adReady) return;
     _AdMob.initialize({}).then(function(){ _adReady=true; prepReward(); if(_wantBanner) showBanner(); }).catch(function(){}); }  // 배너는 홈 진입 후에만
   function prepReward(){ if(_AdMob) _AdMob.prepareRewardVideoAd({adId:AD_UNIT.reward}).catch(function(){}); }
+  var _adSizeWatched=false;
+  function _watchBannerSize(){ if(_adSizeWatched || !_AdMob || !_AdMob.addListener) return; _adSizeWatched=true;
+    // 실제 배너 높이를 받아 예약공간(--adtop)을 정확히 맞춤 → 기기별 겹침/과여백 방지
+    _AdMob.addListener("bannerAdSizeChanged", function(sz){ var h=(sz&&sz.height>0)?sz.height:60;
+      document.documentElement.style.setProperty("--adtop","calc("+h+"px + env(safe-area-inset-top, 0px))"); }); }
   function showBanner(){ if(!_AdMob || _bannerOn) return;
     if(!_adReady){ _wantBanner=true; return; }   // init 완료 후 자동 표시
-    _bannerOn=true;
+    _bannerOn=true; _watchBannerSize();
     _AdMob.showBanner({adId:AD_UNIT.banner, adSize:"ADAPTIVE_BANNER", position:"TOP_CENTER", margin:0})
-      .then(function(){ document.documentElement.style.setProperty("--adtop","calc(60px + env(safe-area-inset-top, 20px))"); })  // 배너높이 + 상태바 여백
+      .then(function(){ document.documentElement.style.setProperty("--adtop","calc(60px + env(safe-area-inset-top, 20px))"); })  // 폴백(이벤트 오면 실제높이로 교체)
       .catch(function(){ _bannerOn=false; }); }
   window.PJ_SHOWBANNER=showBanner;   // 로그인 후 홈 진입 시 호출
   // 안드로이드 하드웨어 뒤로가기 처리: 오버레이 닫기 → 게임중이면 홈 → 그 외 false(앱종료)
@@ -3183,7 +3188,7 @@
     var stone=(typeof platById==="function")?platById("stone"):null;
     var BUB=["🍀","✨","💰","⭐","🎲","😊","💜","🎵","👀","❗","🐣","🎉"];
     var N=4, walkers=[];
-    for(var i=0;i<N;i++){ walkers.push({ x:(i/N)*(W+24)-12, spd:0.16+(i%2)*0.03, ph:i*1.7, idx:i%pool.length, bub:null, bubT:0 }); }
+    for(var i=0;i<N;i++){ walkers.push({ x:(i/N)*(W+24)-12, spd:0.16+(i%2)*0.03, ph:i*1.7, idx:i%pool.length, bub:null, bubT:0, nextBlink:600+Math.random()*3000, blinkEnd:0 }); }
     function drawBubble(cx, topY, emo){
       var bw=15, bh=13, bx=Math.round(cx-bw/2), by=Math.round(topY-bh);
       g.fillStyle="#ffffff"; g.beginPath();
@@ -3203,7 +3208,8 @@
             w.x += w.spd;
             if(w.x > W+14){ w.x=-14; w.idx=(w.idx+N)%pool.length; w.bub=null; }   // 벗어나면 다음 캐릭터로
             var hop=Math.abs(Math.sin(ts*0.005 + w.ph))*8, feetY=groundY-1-hop;
-            drawChar(g, pool[w.idx], w.x, feetY, false, "none");
+            if(ts>w.blinkEnd && ts>w.nextBlink){ w.blinkEnd=ts+120; w.nextBlink=ts+1600+Math.random()*3600; }  // 가끔 눈 깜빡
+            drawChar(g, pool[w.idx], w.x, feetY, false, "none", undefined, {blink: ts<w.blinkEnd, gaze:0});
             if(!w.bub && Math.random()<0.003){ w.bub=BUB[Math.floor(Math.random()*BUB.length)]; w.bubT=ts+1500+Math.random()*1400; }  // 가끔 일부만
             if(w.bub){ if(ts>w.bubT) w.bub=null; else drawBubble(w.x, feetY-16, w.bub); }
           });
