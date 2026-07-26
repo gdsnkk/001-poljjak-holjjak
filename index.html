@@ -2473,7 +2473,7 @@
     var svr=window.PJ_NOTICES||[];
     if(svr.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📩 운영진 공지</div>');
       svr.forEach(function(n){ ntcRow(L, n.title||"📢 알림", String(n.created_at||"").slice(0,10), String(n.body||"").replace(/\n/g,"<br>"));
-        if(!n.read_at && window.PJ_SB){ window.PJ_SB.rpc('mark_notice_read',{p_id:n.id}).catch(function(){}); } }); }
+        if(!n.read_at && window.PJ_SB){ window.PJ_SB.rpc('mark_notice_read',{p_id:n.id}).then(function(){},function(){}); } }); }
     var nf=st.notifs||[];
     if(nf.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
@@ -3040,7 +3040,7 @@
     if(!_rewardReady){ prepReward(); onDone(false,'notready'); return; }   // 아직 로딩 전 → 준비만 트리거하고 안내
     _rewardEarned=false;
     _AdMob.showRewardVideoAd()
-      .then(function(){ if(_rewardEarned && window.PJ_SB) window.PJ_SB.rpc('log_reward_view').catch(function(){});   // 리워드 시청 로깅(어드민 집계)
+      .then(function(){ if(_rewardEarned && window.PJ_SB) window.PJ_SB.rpc('log_reward_view').then(function(){},function(){});   // 리워드 시청 로깅(어드민 집계)
         onDone(_rewardEarned, _rewardEarned?'ok':'closed'); })   // Rewarded 이벤트 왔을 때만 지급(중간에 닫으면 지급 X)
       .catch(function(){ onDone(false,'error'); })
       .finally(function(){ _rewardReady=false; prepReward(); }); }
@@ -3358,7 +3358,7 @@
   window.PJ_REQUEST_DELETION=function(){ (async function(){ try{ await sb.rpc('request_deletion'); }catch(e){} try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} sb.auth.signOut().then(function(){ location.reload(); }); })(); };
   function loggedIn(){ window.PJ_AUTHED=true; $("pjLogin").style.display="none"; if(window.PJ_SHOWBANNER) PJ_SHOWBANNER();  /* 홈 진입 후 배너 표시(로그인·스플래시엔 X) */ sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){});
     sb.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; var nb=document.getElementById("noticeBtn"); if(nb&&window.PJ_NOTICES.some(function(n){return !n.read_at;}))nb.classList.add("alert"); }).catch(function(){});
-    var _plat=(window.Capacitor&&window.Capacitor.getPlatform)?window.Capacitor.getPlatform():'web'; sb.rpc('set_platform',{p_platform:_plat}).catch(function(){});   // iOS/Android/Web 기록
+    var _plat=(window.Capacitor&&window.Capacitor.getPlatform)?window.Capacitor.getPlatform():'web'; sb.rpc('set_platform',{p_platform:_plat}).then(function(){},function(){});   // iOS/Android/Web 기록
     pullProfile(); }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
