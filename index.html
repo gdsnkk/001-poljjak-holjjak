@@ -345,7 +345,7 @@
   .lb-metric button.on { border-color:var(--gold); color:var(--ink); }
   /* --- play layout v2 --- */
   #stageWrap { position:relative; width:100%; display:block; text-align:center; }
-  #stage { height:min(60vh,540px); width:auto; aspect-ratio:128/176; max-width:100%; display:block; margin:0 auto; image-rendering:pixelated; border:3px solid var(--line); box-shadow:5px 5px 0 rgba(0,0,0,.4); background:#0a0a16; touch-action:manipulation; }
+  #stage { width:100%; height:auto; aspect-ratio:128/176; max-width:100%; display:block; margin:0 auto; image-rendering:pixelated; border:3px solid var(--line); box-shadow:5px 5px 0 rgba(0,0,0,.4); background:#0a0a16; touch-action:manipulation; }
   #stageTop { position:absolute; top:6px; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:0 8px; pointer-events:none; gap:6px; }
   #stageTop .stc { display:flex; flex-direction:column; align-items:center; gap:1px; background:rgba(10,8,22,.4); border:2px solid rgba(255,255,255,.18); padding:3px 9px; }
   #stageTop .stl { font-size:11px; letter-spacing:.04em; color:#f0ecff; text-shadow:1px 1px 0 #000; }
@@ -2656,7 +2656,7 @@
       var adCntTxt=((st.adCount||0)<=0)?("하루 최대 "+AD_CAP+"번"):("남은 "+adLeft+"번");
       ab.disabled=adDone; ab.innerHTML=adDone?"오늘 광고 다 봤어요 ✓":"📺 광고 보고 +"+comma(AD_REWARD)+" 🪙 <span style='opacity:.8;font-weight:700'>("+adCntTxt+")</span>";
       ab.onclick=function(){ ensureAd(); if((st.adCount||0)>=AD_CAP){ toast("오늘 광고를 다 봤어요"); return; } var b=this; b.disabled=true;
-        watchRewardAd(function(ok){ if(ok){ st.adCount=(st.adCount||0)+1; st.coins+=AD_REWARD; logCoin(AD_REWARD,"📺 광고 보너스"); sfx("coin"); save(); refreshTop(); renderShop(); toast("🪙 +"+comma(AD_REWARD)+" 획득!"); } else { b.disabled=false; toast("광고를 끝까지 봐야 받아요"); } }); };
+        watchRewardAd(function(ok, reason){ if(ok){ st.adCount=(st.adCount||0)+1; st.coins+=AD_REWARD; logCoin(AD_REWARD,"📺 광고 보너스"); sfx("coin"); save(); refreshTop(); renderShop(); toast("🪙 +"+comma(AD_REWARD)+" 획득!"); } else { b.disabled=false; toast(reason==='notready' ? "광고 준비 중이에요 · 잠시 후 다시" : "광고를 끝까지 봐야 받아요"); } }); };
       body.appendChild(ab); }
     body.insertAdjacentHTML("beforeend",'<p class="lede" style="font-size:11px;opacity:.75">플레이·출석·미션'+(_AdMob?'·광고':'')+'로 코인을 모아요! 🍀</p>');
   }
@@ -3005,8 +3005,13 @@
   (function(){ var ab=document.getElementById("adbanner"); if(ab)ab.style.display="none"; })();
   var _wantBanner=false;
   function initAds(){ if(!_AdMob || _adReady) return;
-    _AdMob.initialize({}).then(function(){ _adReady=true; prepReward(); if(_wantBanner) showBanner(); }).catch(function(){}); }  // 배너는 홈 진입 후에만
-  function prepReward(){ if(_AdMob) _AdMob.prepareRewardVideoAd({adId:AD_UNIT.reward}).catch(function(){}); }
+    _AdMob.initialize({}).then(function(){ _adReady=true; _watchReward(); prepReward(); if(_wantBanner) showBanner(); }).catch(function(){}); }  // 배너는 홈 진입 후에만
+  var _rewardReady=false, _rewardEarned=false, _rewardWatched=false;
+  function _watchReward(){ if(_rewardWatched || !_AdMob || !_AdMob.addListener) return; _rewardWatched=true;
+    _AdMob.addListener("onRewardedVideoAdLoaded", function(){ _rewardReady=true; });          // 로딩 완료
+    _AdMob.addListener("onRewardedVideoAdFailedToLoad", function(){ _rewardReady=false; });    // 로딩 실패
+    _AdMob.addListener("onRewardedVideoAdReward", function(){ _rewardEarned=true; }); }         // 보상 실제 획득 순간만
+  function prepReward(){ if(!_AdMob) return; _rewardReady=false; _AdMob.prepareRewardVideoAd({adId:AD_UNIT.reward}).catch(function(){}); }
   var _adSizeWatched=false;
   function _watchBannerSize(){ if(_adSizeWatched || !_AdMob || !_AdMob.addListener) return; _adSizeWatched=true;
     // 실제 배너 높이를 받아 예약공간(--adtop)을 정확히 맞춤 → 기기별 겹침/과여백 방지
@@ -3025,8 +3030,14 @@
     if(typeof playing!=="undefined" && playing){ if(busy) return true; playing=false; goHub(); return true; }
     return false;
   };
-  function watchRewardAd(onDone){ if(!_AdMob){ onDone(false); return; }
-    _AdMob.showRewardVideoAd().then(function(){ onDone(true); }).catch(function(){ onDone(false); }).finally(function(){ prepReward(); }); }
+  function watchRewardAd(onDone){ if(!_AdMob){ onDone(false,'noplugin'); return; }
+    _watchReward();
+    if(!_rewardReady){ prepReward(); onDone(false,'notready'); return; }   // 아직 로딩 전 → 준비만 트리거하고 안내
+    _rewardEarned=false;
+    _AdMob.showRewardVideoAd()
+      .then(function(){ onDone(_rewardEarned, _rewardEarned?'ok':'closed'); })   // Rewarded 이벤트 왔을 때만 지급(중간에 닫으면 지급 X)
+      .catch(function(){ onDone(false,'error'); })
+      .finally(function(){ _rewardReady=false; prepReward(); }); }
 
   /* ---------- wiring ---------- */
   cloudBtnsInit();
