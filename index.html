@@ -791,7 +791,7 @@
     { date:"2026-07-08", title:"발판별 배경 테마 업데이트", body:"발판 종류에 따라 강·잔디·하늘·호수·간식동산 등 배경이 자동으로 바뀌어요. 취향껏 발판을 골라보세요." },
     { date:"2026-07-07", title:"폴짝 오픈! 🐸", body:"운빨 징검다리 게임 폴짝이 문을 열었어요. 매일 '오늘의 도전'에 참여하고, 주간/역대 랭킹에 도전해보세요!" }
   ];
-  var APP_VERSION = "0.9.1";
+  var APP_VERSION = "1.0.0";
   var WELCOME_HTML = "<ul><li>🗓️ <b>오늘의 도전</b> · ♾️ <b>엔드리스</b> 카드를 눌러 플레이!</li><li>징검다리에서 <b>좌/우</b>를 골라 멀리 건너요 — 매 칸 50:50 운!</li><li>🐾 <b>펫</b>·🛍 <b>상점</b>에서 펫·발판·악세를 모아 능력치를 키워요.</li><li>🏆 <b>랭킹</b>·🎯 <b>미션</b>·👥 <b>팀/친구</b>로 매일매일 즐겨요.</li><li>홈의 🗺️ <b>여정</b> 바로 얼마나 멀리 왔는지 확인!</li></ul>";
   var WHATSNEW_HTML = "<ul><li>🎵 <b>배경음악</b> 추가 — 설정에서 켜기</li><li>🪙 <b>코인 내역</b> · 🔔 랭킹 정산 <b>알림</b></li><li>🎖 <b>유저 뱃지</b>로 펫 스탯 강화 · 도감 확장</li><li>✊ <b>부활 미니게임</b> 6종 · 발판 새 모양</li></ul>";
   var TERMS = "제1조(목적) 본 약관은 '폴짝홀짝'(이하 '서비스')의 이용 조건·절차와 운영자·이용자의 권리·의무를 규정합니다.<br><br>제2조(서비스) 운 기반 캐주얼 게임으로 랭킹·친구/팀·상점·뽑기·출석/미션 등을 제공합니다.<br><br>제3조(계정) 이용자는 소셜 로그인으로 계정을 생성하며, 계정 관리 책임은 이용자에게 있습니다.<br><br>제4조(재화 '코인') 코인은 서비스 내에서만 쓰이는 재화로 <b>현금 가치가 없고 환급되지 않습니다.</b> 소비된 코인·소모성 아이템은 원칙적으로 환불되지 않습니다. 뽑기의 등급별 확률은 서비스 내에 고지합니다.<br><br>제5조(유료 결제) 결제는 App Store/Google Play를 통해 이루어지며, 환불·청약철회는 관련 법령과 각 스토어 정책에 따릅니다. 이미 사용한 디지털 콘텐츠는 청약철회가 제한될 수 있습니다.<br><br>제6조(금지행위) 변조·매크로·버그 악용 등 비정상적 재화/기록 취득, 부적절한 닉네임, 운영 방해를 금지합니다.<br><br>제7조(회원 탈퇴·데이터 삭제) 설정에서 언제든 탈퇴할 수 있습니다. 탈퇴 시 데이터는 즉시 삭제되지 않고 <b>탈퇴일부터 30일간 보관</b>되며, 이 기간 내 다시 로그인하면 탈퇴가 자동 철회되어 데이터가 복구됩니다. 30일간 재로그인이 없으면 자동으로 영구 삭제됩니다.<br><br>제8조(책임의 한계) 서비스는 '있는 그대로' 제공되며 게임의 승패·기록은 확률·운에 따릅니다.<br><br>제9조(약관 변경) 법령·서비스 변경에 따라 개정될 수 있으며 변경 시 서비스 내 공지합니다.<br><br>제10조(준거법) 대한민국 법을 준거법으로 합니다.<br><br>※ 본 약관은 출시 준비 중 초안이며 정식 출시 시 갱신됩니다.";
@@ -2469,8 +2469,11 @@
     var h=wrap.querySelector(".ntc-h"), b=wrap.querySelector(".ntc-b"), ar=wrap.querySelector(".ntc-arrow");
     h.onclick=function(){ var op=b.hidden; b.hidden=!op; ar.textContent=op?"▴":"▾"; }; L.appendChild(wrap); }
   function renderNotices(){ var L=$("noticeList"); L.innerHTML="";
-    var nf=st.notifs||[];
-    if(nf.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
+    var nf=st.notifs||[]; var svr=window.PJ_NOTICES||[];
+    if(nf.length||svr.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
+      svr.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read_at?"":" unread");
+        el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+String(n.created_at||"").slice(0,10)+'</span></div><div class="mnb">'+String(n.body||"").replace(/\n/g,"<br>")+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el);
+        if(!n.read_at && window.PJ_SB){ window.PJ_SB.rpc('mark_notice_read',{p_id:n.id}).catch(function(){}); } });
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
         el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); }); }
     var ann=window.PJ_ANN||[];
@@ -3035,7 +3038,8 @@
     if(!_rewardReady){ prepReward(); onDone(false,'notready'); return; }   // 아직 로딩 전 → 준비만 트리거하고 안내
     _rewardEarned=false;
     _AdMob.showRewardVideoAd()
-      .then(function(){ onDone(_rewardEarned, _rewardEarned?'ok':'closed'); })   // Rewarded 이벤트 왔을 때만 지급(중간에 닫으면 지급 X)
+      .then(function(){ if(_rewardEarned && window.PJ_SB) window.PJ_SB.rpc('log_reward_view').catch(function(){});   // 리워드 시청 로깅(어드민 집계)
+        onDone(_rewardEarned, _rewardEarned?'ok':'closed'); })   // Rewarded 이벤트 왔을 때만 지급(중간에 닫으면 지급 X)
       .catch(function(){ onDone(false,'error'); })
       .finally(function(){ _rewardReady=false; prepReward(); }); }
 
@@ -3065,7 +3069,9 @@
   var shb=$("shopBal"); if(shb){ shb.parentNode.style.cursor="pointer"; shb.parentNode.onclick=openCoinLog; }
   document.addEventListener("click", function(e){ var t=e.target; if(!t)return; if(t.tagName==="BUTTON" || (t.closest && t.closest("button, .pill, .mode-card, .cbox, .journey, .teamcard, .frrow"))) vibrate(6); }, true);
   $("streakStat").onclick=function(){ renderMissions(); show("missionOv"); };
-  $("noticeBtn").onclick=function(){ renderNotices(); show("noticeOv"); };
+  $("noticeBtn").onclick=function(){ show("noticeOv");
+    if(window.PJ_SB){ window.PJ_SB.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; renderNotices(); }).catch(function(){ renderNotices(); }); }
+    else renderNotices(); };
   $("noticeClose").onclick=function(){ hide("noticeOv"); };
   $("settingsBtn").onclick=openSettings;
   $("settingsClose").onclick=function(){ hide("settingsOv"); refreshHub(); };
@@ -3346,7 +3352,9 @@
   window.PJ_LOGOUT=function(){ sb.auth.signOut().then(function(){ try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} location.reload(); }); };  /* 로컬 데이터도 비워서 계정 전환 시 이전 진행상황이 안 섞이게 */
   // 탈퇴 요청: 서버에 deleted_at 마킹(30일 유예) → 로컬 비우고 로그아웃. 30일 내 재로그인 시 자동 복구.
   window.PJ_REQUEST_DELETION=function(){ (async function(){ try{ await sb.rpc('request_deletion'); }catch(e){} try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} sb.auth.signOut().then(function(){ location.reload(); }); })(); };
-  function loggedIn(){ window.PJ_AUTHED=true; $("pjLogin").style.display="none"; if(window.PJ_SHOWBANNER) PJ_SHOWBANNER();  /* 홈 진입 후 배너 표시(로그인·스플래시엔 X) */ sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){}); pullProfile(); }
+  function loggedIn(){ window.PJ_AUTHED=true; $("pjLogin").style.display="none"; if(window.PJ_SHOWBANNER) PJ_SHOWBANNER();  /* 홈 진입 후 배너 표시(로그인·스플래시엔 X) */ sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){});
+    sb.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; var nb=document.getElementById("noticeBtn"); if(nb&&window.PJ_NOTICES.some(function(n){return !n.read_at;}))nb.classList.add("alert"); }).catch(function(){});
+    pullProfile(); }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
   // 로그인 시: 서버 프로필을 진실로 삼아 코인+닉네임을 내려받음. 서버 닉네임이 비어있을 때만 로컬 이름을 올림.
