@@ -220,7 +220,7 @@
   #stage { height:min(46vh,340px); width:auto; aspect-ratio:128/160; max-width:94vw; display:block; image-rendering:pixelated; border:3px solid var(--line); box-shadow:5px 5px 0 rgba(0,0,0,.4); background:#0a0a16; touch-action:manipulation; }
   .stage-tap { text-align:center; font-size:12px; color:var(--dim); margin-top:6px; }
 
-  .history { width:100%; max-width:420px; background:var(--panel); border:3px solid var(--line); padding:9px 12px 10px; display:flex; flex-direction:column; gap:7px; }
+  .history { width:100%; background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 rgba(0,0,0,.35); padding:9px 12px 10px; display:flex; flex-direction:column; gap:7px; }
   .history[hidden] { display:none; }
   .hh { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .hh .l { font-size:10.5px; letter-spacing:.08em; color:var(--dim); } .hh .l .f { color:#7a70a8; }
@@ -347,13 +347,13 @@
   #stageWrap { position:relative; width:100%; display:block; text-align:center; }
   #stage { width:100%; height:auto; aspect-ratio:128/176; max-width:100%; display:block; margin:0 auto; image-rendering:pixelated; border:3px solid var(--line); box-shadow:5px 5px 0 rgba(0,0,0,.4); background:#0a0a16; touch-action:manipulation; }
   #stageTop { position:absolute; top:6px; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:0 8px; pointer-events:none; gap:6px; }
-  #stageTop .stc { display:flex; flex-direction:column; align-items:center; gap:1px; background:rgba(10,8,22,.4); border:2px solid rgba(255,255,255,.18); padding:3px 9px; }
+  #stageTop .stc { display:flex; flex-direction:column; align-items:center; gap:1px; background:rgba(10,8,22,.55); border:2px solid rgba(255,255,255,.18); box-shadow:3px 3px 0 rgba(0,0,0,.3); padding:3px 9px; }
   #stageTop .stl { font-size:11px; letter-spacing:.04em; color:#f0ecff; text-shadow:1px 1px 0 #000; }
   #stageTop .stv { font-size:24px; font-weight:800; color:#fff; text-shadow:2px 2px 0 #000; line-height:1; }
   #stageTop .stc.big .stv { font-size:32px; }
   #stageTop .stpot .stv { color:var(--gold2); }
   .stagehint { position:absolute; bottom:7px; left:0; right:0; text-align:center; font-size:11px; color:rgba(255,255,255,.72); text-shadow:1px 1px 0 #000; pointer-events:none; }
-  .botbar { width:100%; display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--panel); border:3px solid var(--line); padding:8px 10px; }
+  .botbar { width:100%; display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 rgba(0,0,0,.35); padding:8px 10px; }
   .botbar .prob { font-size:12px; color:var(--dim); flex:1 1 120px; } .botbar .prob b { color:var(--gold2); }
   .botbar .loadout { display:flex; gap:4px; }
   /* empty rank row must be horizontal, not stretched vertical */
@@ -489,7 +489,7 @@
   .bigcash { width:100%; font-family:inherit; font-size:15px; font-weight:800; background:linear-gradient(180deg,#ffe58a,#ffcf5c); color:#5a3d00; border:3px solid #5a3d00; box-shadow:4px 4px 0 rgba(0,0,0,.4); padding:12px; cursor:pointer; }
   .bigcash:active { transform:translate(2px,2px); box-shadow:2px 2px 0 rgba(0,0,0,.4); }
   .bigcash:disabled { filter:grayscale(.55) brightness(.82); cursor:default; }
-  .itembar { width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--panel); border:3px solid var(--line); padding:8px; }
+  .itembar { width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 rgba(0,0,0,.35); padding:8px; }
   .dailyboard { width:100%; background:var(--panel); border:3px solid var(--line); box-shadow:4px 4px 0 rgba(0,0,0,.35); padding:9px 10px; display:flex; flex-direction:column; gap:7px; }
   .dailyboard .db-h { font-size:12px; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:6px; }
   .dailyboard .db-n { margin-left:auto; font-size:11px; color:var(--gold2); font-weight:800; background:#12102a; border:1px solid var(--line); border-radius:99px; padding:1px 8px; }
