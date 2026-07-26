@@ -2469,11 +2469,12 @@
     var h=wrap.querySelector(".ntc-h"), b=wrap.querySelector(".ntc-b"), ar=wrap.querySelector(".ntc-arrow");
     h.onclick=function(){ var op=b.hidden; b.hidden=!op; ar.textContent=op?"▴":"▾"; }; L.appendChild(wrap); }
   function renderNotices(){ var L=$("noticeList"); L.innerHTML="";
-    var nf=st.notifs||[]; var svr=window.PJ_NOTICES||[];
-    if(nf.length||svr.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
-      svr.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read_at?"":" unread");
-        el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+String(n.created_at||"").slice(0,10)+'</span></div><div class="mnb">'+String(n.body||"").replace(/\n/g,"<br>")+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el);
-        if(!n.read_at && window.PJ_SB){ window.PJ_SB.rpc('mark_notice_read',{p_id:n.id}).catch(function(){}); } });
+    var svr=window.PJ_NOTICES||[];
+    if(svr.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">📩 운영진 공지</div>');
+      svr.forEach(function(n){ ntcRow(L, n.title||"📢 알림", String(n.created_at||"").slice(0,10), String(n.body||"").replace(/\n/g,"<br>"));
+        if(!n.read_at && window.PJ_SB){ window.PJ_SB.rpc('mark_notice_read',{p_id:n.id}).catch(function(){}); } }); }
+    var nf=st.notifs||[];
+    if(nf.length){ L.insertAdjacentHTML("beforeend",'<div class="sect">🔔 내 알림</div>');
       nf.forEach(function(n){ var el=document.createElement("div"); el.className="mynotif"+(n.read?"":" unread");
         el.innerHTML='<div class="mnt"><b></b><span class="mnd">'+n.t+'</span></div><div class="mnb">'+n.body+'</div>'; el.querySelector("b").textContent=n.title; L.appendChild(el); }); }
     var ann=window.PJ_ANN||[];
@@ -3069,9 +3070,11 @@
   var shb=$("shopBal"); if(shb){ shb.parentNode.style.cursor="pointer"; shb.parentNode.onclick=openCoinLog; }
   document.addEventListener("click", function(e){ var t=e.target; if(!t)return; if(t.tagName==="BUTTON" || (t.closest && t.closest("button, .pill, .mode-card, .cbox, .journey, .teamcard, .frrow"))) vibrate(6); }, true);
   $("streakStat").onclick=function(){ renderMissions(); show("missionOv"); };
-  $("noticeBtn").onclick=function(){ show("noticeOv");
-    if(window.PJ_SB){ window.PJ_SB.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; renderNotices(); }).catch(function(){ renderNotices(); }); }
-    else renderNotices(); };
+  $("noticeBtn").onclick=function(){ show("noticeOv"); renderNotices();   // 즉시 렌더(폴백 보장) 후 서버 새로고침
+    if(window.PJ_SB){ Promise.all([
+      window.PJ_SB.rpc('get_announcements').then(function(r){ if(r&&r.data)window.PJ_ANN=r.data; }).catch(function(){}),
+      window.PJ_SB.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; }).catch(function(){})
+    ]).then(renderNotices).catch(function(){}); } };
   $("noticeClose").onclick=function(){ hide("noticeOv"); };
   $("settingsBtn").onclick=openSettings;
   $("settingsClose").onclick=function(){ hide("settingsOv"); refreshHub(); };
