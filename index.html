@@ -3354,6 +3354,7 @@
   window.PJ_REQUEST_DELETION=function(){ (async function(){ try{ await sb.rpc('request_deletion'); }catch(e){} try{ localStorage.removeItem("poljjak_state_v1"); localStorage.removeItem("poljjak_board_v1"); localStorage.removeItem("poljjak_sv"); }catch(e){} sb.auth.signOut().then(function(){ location.reload(); }); })(); };
   function loggedIn(){ window.PJ_AUTHED=true; $("pjLogin").style.display="none"; if(window.PJ_SHOWBANNER) PJ_SHOWBANNER();  /* 홈 진입 후 배너 표시(로그인·스플래시엔 X) */ sb.auth.getUser().then(function(r){ if(r.data&&r.data.user) window.PJ_EMAIL=r.data.user.email; }); sb.rpc('resume_account').then(function(r){ if(r&&r.data===true && window.PJ_WELCOMEBACK) setTimeout(window.PJ_WELCOMEBACK, 600); }).catch(function(){});
     sb.rpc('get_my_notices').then(function(r){ window.PJ_NOTICES=(r&&r.data)?r.data:[]; var nb=document.getElementById("noticeBtn"); if(nb&&window.PJ_NOTICES.some(function(n){return !n.read_at;}))nb.classList.add("alert"); }).catch(function(){});
+    var _plat=(window.Capacitor&&window.Capacitor.getPlatform)?window.Capacitor.getPlatform():'web'; sb.rpc('set_platform',{p_platform:_plat}).catch(function(){});   // iOS/Android/Web 기록
     pullProfile(); }
   async function syncName(){ try{ var nm=gameName(); if(!nm)return; var u=(await sb.auth.getUser()).data.user; if(u) await sb.from("profiles").update({nickname:nm}).eq("id",u.id); }catch(e){} }
   window.PJ_SYNCNAME=syncName;
